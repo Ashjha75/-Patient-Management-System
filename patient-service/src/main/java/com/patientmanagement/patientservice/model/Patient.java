@@ -26,9 +26,10 @@ package com.patientmanagement.patientservice.model;
         @Serial
         private static final long serialVersionUID = 1L;
 
+//        @GeneratedValue(strategy = GenerationType.UUID)
+
         @Id
-        @GeneratedValue(strategy = GenerationType.UUID)
-        private UUID id;
+        private String id;
 
         @NotNull
         @Column(nullable = false)
