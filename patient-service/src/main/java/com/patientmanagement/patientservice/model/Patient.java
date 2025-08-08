@@ -1,57 +1,99 @@
 package com.patientmanagement.patientservice.model;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
-import java.time.LocalDate;
-import java.util.UUID;
 
-@Entity
-@Table(name = "patients")
-public class Patient {
+    import jakarta.persistence.*;
+    import jakarta.validation.constraints.Email;
+    import jakarta.validation.constraints.NotNull;
+    import jakarta.validation.constraints.Size;
+    import lombok.*;
+    import org.hibernate.annotations.CreationTimestamp;
+    import org.hibernate.annotations.UpdateTimestamp;
 
-    @Id
-    @GeneratedValue(strategy =  GenerationType.UUID)
-    private UUID id;
+    import java.io.Serial;
+    import java.io.Serializable;
+    import java.time.LocalDate;
+    import java.time.LocalDateTime;
+    import java.util.UUID;
 
-    @NotNull
-    private String firstName;
+    @Entity
+    @Table(name = "patients")
+    @Data // Lombok: generates getters, setters, toString, equals, hashCode
+    @NoArgsConstructor // Lombok: no-args constructor (required by JPA)
+    @AllArgsConstructor // Lombok: all-args constructor
+    //@Builder // Lombok: builder pattern
+    public class Patient implements Serializable {
 
-    @NotNull
-    private String lastName;
+        @Serial
+        private static final long serialVersionUID = 1L;
 
-    @NotNull
-    @Column(unique = true)
-    @Size(min = 3, max = 20)
-    private  String username;
+        @Id
+        @GeneratedValue(strategy = GenerationType.UUID)
+        private UUID id;
 
-    @NotNull
-    @Email
-    @Column(unique = true)
-    private String email;
+        @NotNull
+        @Column(nullable = false)
+        private String firstName;
 
-    @NotNull
-    private LocalDate dateOfBirth;
+        @NotNull
+        @Column(nullable = false)
+        private String lastName;
 
-    @NotNull
-    private String gender;
+        @NotNull
+        @Size(min = 3, max = 20)
+        @Column(unique = true, nullable = false)
+        private String username;
 
-    @NotNull
-    private String addressLine1;
+        @NotNull
+        @Email
+        @Column(unique = true, nullable = false)
+        private String email;
 
-    private String addressLine2;
+        @NotNull
+        @Column(nullable = false)
+        private LocalDate dateOfBirth;
 
-    @NotNull
-    private String city;
+        @NotNull
+        @Enumerated(EnumType.STRING)
+        @Column(nullable = false)
+        private Gender gender;
 
-    @NotNull
-    private String state;
+        @NotNull
+        @Column(nullable = false)
+        private String addressLine1;
 
-    @NotNull
-    private String country;
+        private String addressLine2;
 
-    @NotNull
-    private String postalCode;
+        @NotNull
+        @Column(nullable = false)
+        private String city;
 
-}
+        @NotNull
+        @Column(nullable = false)
+        private String state;
+
+        @NotNull
+        @Column(nullable = false)
+        private String country;
+
+        @NotNull
+        @Column(nullable = false)
+        private String postalCode;
+
+        @NotNull
+        @Column(nullable = false)
+        private LocalDate registrationDate;
+
+        @CreationTimestamp
+        @Column(updatable = false)
+        // Automatically set when the entity is created
+        private LocalDateTime createdAt;
+
+        @UpdateTimestamp
+        // Automatically updated when the entity is changed
+        private LocalDateTime updatedAt;
+
+        // Enum for gender to restrict values
+        public enum Gender {
+            MALE, FEMALE, OTHER
+        }
+    }
