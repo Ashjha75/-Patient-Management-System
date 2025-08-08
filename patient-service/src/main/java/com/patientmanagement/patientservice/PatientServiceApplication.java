@@ -8,6 +8,7 @@ public class PatientServiceApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(PatientServiceApplication.class, args);
+        System.out.println("Patient Service Application is running...🎉✨");
     }
 
 }
