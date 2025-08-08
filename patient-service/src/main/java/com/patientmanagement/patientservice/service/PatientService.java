@@ -18,8 +18,12 @@ public class PatientService {
 
     public List<PatientResponseDTO> getAllPatients() {
         List<Patient> patients = patientRepository.findAll();
+     System.out.println("Fetching all patients from the database..." + patients.size()); // Debugging statement
         return patients.stream()
-                .map(PatientMapper::toDTO) // Assuming PatientMapper has a static method to convert Patient to PatientResponseDTO
+                .map(PatientMapper::toDTO) // Using method reference for better readability
                 .toList();
+//        return patients.stream()
+//                .map(patient -> PatientMapper.toDTO(patient)) // Assuming PatientMapper has a static method to convert Patient to PatientResponseDTO
+//                .toList();
     }
 }
