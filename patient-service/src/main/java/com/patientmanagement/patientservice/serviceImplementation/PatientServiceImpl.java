@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * The type Patient service.
+ */
 @Service
 public class PatientServiceImpl implements PatientService {
     private final PatientRepository patientRepository;
@@ -124,5 +127,13 @@ public class PatientServiceImpl implements PatientService {
 
         Patient updatedPatient = patientRepository.save(patient);
         return PatientMapper.toDTO(updatedPatient);
+    }
+
+    @Override
+    public PatientResponseDTO getPatientByUsername(String username) {
+        if (!patientRepository.existsByUsername(username)) {
+            throw new ResourceNotFound("Patient", "username", username);
+        }
+        return PatientMapper.toDTO(patientRepository.findByUsername(username));
     }
 }

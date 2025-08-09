@@ -5,6 +5,7 @@ import com.patientmanagement.patientservice.dto.PatientResponseDTO;
 
 import java.util.List;
 
+
 public interface PatientService {
     List<PatientResponseDTO> getAllPatients();
 
@@ -12,4 +13,9 @@ public interface PatientService {
 
     //    update patients by username
     PatientResponseDTO updatePatient(String username, PatientRequestDto patientRequestDto);
+
+    PatientResponseDTO getPatientByUsername(String username);
+
+
+    PatientResponseDTO deletePatient(String username);
 }
