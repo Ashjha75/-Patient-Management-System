@@ -32,4 +32,13 @@ public class PatientController {
         PatientResponseDTO responseDto = patientService.addPatient(patientRequestDto);
         return ResponseEntity.ok(responseDto);
     }
+
+    @PutMapping("/edit-patient")
+    public ResponseEntity<PatientResponseDTO> editPatient(
+            @RequestParam(name = "username") String username,
+            @RequestBody PatientRequestDto patientRequestDto) {
+
+        PatientResponseDTO responseDto = patientService.updatePatient(username, patientRequestDto);
+        return ResponseEntity.ok(responseDto);
+    }
 }

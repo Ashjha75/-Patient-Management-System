@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Order(Ordered.HIGHEST_PRECEDENCE)
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
