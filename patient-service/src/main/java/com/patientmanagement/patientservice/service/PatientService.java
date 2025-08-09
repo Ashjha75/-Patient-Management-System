@@ -17,5 +17,5 @@ public interface PatientService {
     PatientResponseDTO getPatientByUsername(String username);
 
 
-    PatientResponseDTO deletePatient(String username);
+    Void deletePatient(String username);
 }

@@ -136,4 +136,14 @@ public class PatientServiceImpl implements PatientService {
         }
         return PatientMapper.toDTO(patientRepository.findByUsername(username));
     }
+
+    @Override
+    public Void deletePatient(String username) {
+        if (!patientRepository.existsByUsername(username)) {
+            throw new ResourceNotFound("Patient", "username", username);
+        }
+
+        patientRepository.delete(patientRepository.findByUsername(username));
+
+    }
 }
