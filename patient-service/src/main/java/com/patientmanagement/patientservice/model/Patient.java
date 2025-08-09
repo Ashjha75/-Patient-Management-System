@@ -1,6 +1,7 @@
 package com.patientmanagement.patientservice.model;
 
 
+    import com.patientmanagement.patientservice.util.enums.Gender;
     import jakarta.persistence.*;
     import jakarta.validation.constraints.Email;
     import jakarta.validation.constraints.NotNull;
@@ -14,7 +15,6 @@ package com.patientmanagement.patientservice.model;
     import java.time.LocalDate;
     import java.time.LocalDateTime;
     import java.util.UUID;
-
     @Entity
     @Table(name = "patients")
     @Data // Lombok: generates getters, setters, toString, equals, hashCode
@@ -93,8 +93,5 @@ package com.patientmanagement.patientservice.model;
         // Automatically updated when the entity is changed
         private LocalDateTime updatedAt;
 
-        // Enum for gender to restrict values
-        public enum Gender {
-            MALE, FEMALE, OTHER
-        }
+
     }

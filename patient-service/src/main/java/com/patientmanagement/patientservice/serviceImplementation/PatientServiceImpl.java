@@ -29,12 +29,12 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public PatientResponseDTO addPatient(PatientRequestDto patientRequestDto) {
-//        if (patientRepository.existsByUsername(patientRequestDto.getUsername())) {
-//            throw new IllegalArgumentException("Username already exists");
-//        }
-//        if (patientRepository.existsByEmail(patientRequestDto.getEmail())) {
-//            throw new IllegalArgumentException("Email already exists");
-//        }
+        if (patientRepository.existsByUsername(patientRequestDto.getUsername())) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        if (patientRepository.existsByEmail(patientRequestDto.getEmail())) {
+            throw new IllegalArgumentException("Email already exists");
+        }
         String id = IdGenerator.generatePatientId();
         Patient patient = PatientMapper.toModel(patientRequestDto, id);
         Patient savedPatient = patientRepository.save(patient);
