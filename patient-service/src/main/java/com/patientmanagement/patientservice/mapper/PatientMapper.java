@@ -3,6 +3,7 @@ package com.patientmanagement.patientservice.mapper;
 import com.patientmanagement.patientservice.dto.PatientRequestDto;
 import com.patientmanagement.patientservice.dto.PatientResponseDTO;
 import com.patientmanagement.patientservice.model.Patient;
+import com.patientmanagement.patientservice.util.enums.Gender;
 
 public class PatientMapper {
 
@@ -36,7 +37,7 @@ public class PatientMapper {
             patient.setUsername(dto.getUsername());
             patient.setEmail(dto.getEmail());
             patient.setDateOfBirth(dto.getDateOfBirth());
-            patient.setGender(Patient.Gender.valueOf(dto.getGender().toUpperCase()));
+            patient.setGender(Gender.valueOf(dto.getGender().toUpperCase()));
             patient.setAddressLine1(dto.getAddressLine1());
             patient.setAddressLine2(dto.getAddressLine2());
             patient.setCity(dto.getCity());

@@ -4,6 +4,7 @@ import com.patientmanagement.patientservice.dto.PatientRequestDto;
 import com.patientmanagement.patientservice.dto.PatientResponseDTO;
 import com.patientmanagement.patientservice.service.PatientService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,7 @@ public class PatientController {
     }
 
     @PostMapping("/add-patient")
-    public ResponseEntity<PatientResponseDTO> addPatient(@RequestBody PatientRequestDto patientRequestDto) {
+    public ResponseEntity<PatientResponseDTO> addPatient(@Valid @RequestBody PatientRequestDto patientRequestDto) {
         PatientResponseDTO responseDto = patientService.addPatient(patientRequestDto);
         return ResponseEntity.ok(responseDto);
     }
