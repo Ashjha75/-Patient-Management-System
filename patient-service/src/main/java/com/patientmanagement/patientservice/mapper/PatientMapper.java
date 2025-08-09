@@ -28,27 +28,22 @@ public class PatientMapper {
          return dto;
      }
 
-    public static Patient toModel(PatientRequestDto dto) {
-        Patient patient = new Patient();
-        // Use provided ID or generate a new one with IdGenerator
-        patient.setId(dto.getId() != null ? dto.getId() : com.patientmanagement.patientservice.util.IdGenerator.generatePatientId());
-        patient.setFirstName(dto.getFirstName());
-        patient.setLastName(dto.getLastName());
-        patient.setUsername(dto.getUsername());
-        patient.setEmail(dto.getEmail());
-        patient.setDateOfBirth(dto.getDateOfBirth());
-        try {
+        public static Patient toModel(PatientRequestDto dto, String id) {
+            Patient patient = new Patient();
+            patient.setId(id);
+            patient.setFirstName(dto.getFirstName());
+            patient.setLastName(dto.getLastName());
+            patient.setUsername(dto.getUsername());
+            patient.setEmail(dto.getEmail());
+            patient.setDateOfBirth(dto.getDateOfBirth());
             patient.setGender(Patient.Gender.valueOf(dto.getGender().toUpperCase()));
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid gender value: " + dto.getGender());
+            patient.setAddressLine1(dto.getAddressLine1());
+            patient.setAddressLine2(dto.getAddressLine2());
+            patient.setCity(dto.getCity());
+            patient.setState(dto.getState());
+            patient.setCountry(dto.getCountry());
+            patient.setPostalCode(dto.getPostalCode());
+            patient.setRegistrationDate(dto.getRegistrationDate());
+            return patient;
         }
-        patient.setAddressLine1(dto.getAddressLine1());
-        patient.setAddressLine2(dto.getAddressLine2());
-        patient.setCity(dto.getCity());
-        patient.setState(dto.getState());
-        patient.setCountry(dto.getCountry());
-        patient.setPostalCode(dto.getPostalCode());
-        patient.setRegistrationDate(dto.getRegistrationDate());
-        return patient;
-    }
 }

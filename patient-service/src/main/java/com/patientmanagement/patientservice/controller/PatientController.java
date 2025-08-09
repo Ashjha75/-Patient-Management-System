@@ -2,6 +2,7 @@ package com.patientmanagement.patientservice.controller;
 
 import com.patientmanagement.patientservice.dto.PatientRequestDto;
 import com.patientmanagement.patientservice.dto.PatientResponseDTO;
+import com.patientmanagement.patientservice.mapper.PatientMapper;
 import com.patientmanagement.patientservice.model.Patient;
 import com.patientmanagement.patientservice.repository.PatientRepository;
 import com.patientmanagement.patientservice.service.PatientService;
@@ -34,10 +35,10 @@ public class PatientController {
     @PostMapping("/add-patient")
     public ResponseEntity<PatientResponseDTO> addPatient(@RequestBody PatientRequestDto patientRequestDto) {
         String id = IdGenerator.generatePatientId();
-        Patient patient = PatientRequestDto.toModel(patientRequestDto, id);
+        Patient patient = PatientMapper.toModel(patientRequestDto, id);
         Patient savedPatient = patientRepository.save(patient);
         // You need a mapper to convert Patient to PatientResponseDTO
-        PatientResponseDTO responseDTO = patientService.toResponseDTO(savedPatient);
+        PatientResponseDTO responseDTO = PatientMapper.toDTO(savedPatient);
         return ResponseEntity.ok(responseDTO);
     }
 }
