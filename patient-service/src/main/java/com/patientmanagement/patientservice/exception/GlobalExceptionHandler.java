@@ -1,5 +1,6 @@
 package com.patientmanagement.patientservice.exception;// package com.example.exception;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
+@Hidden
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

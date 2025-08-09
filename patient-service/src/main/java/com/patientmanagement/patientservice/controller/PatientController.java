@@ -41,4 +41,11 @@ public class PatientController {
         PatientResponseDTO responseDto = patientService.updatePatient(username, patientRequestDto);
         return ResponseEntity.ok(responseDto);
     }
+
+    @GetMapping("get-patient/{patientusername}")
+    public ResponseEntity<PatientResponseDTO> getPatientById(@PathVariable("patientusername") String patientusername) {
+
+        PatientResponseDTO patient = patientService.getPatientByUsername(patientusername);
+        return ResponseEntity.ok(patient);
+    }
 }
