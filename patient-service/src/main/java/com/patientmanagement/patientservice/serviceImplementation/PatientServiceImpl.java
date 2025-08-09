@@ -138,12 +138,10 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public Void deletePatient(String username) {
+    public void deletePatient(String username) {
         if (!patientRepository.existsByUsername(username)) {
             throw new ResourceNotFound("Patient", "username", username);
         }
-
         patientRepository.delete(patientRepository.findByUsername(username));
-
     }
 }
