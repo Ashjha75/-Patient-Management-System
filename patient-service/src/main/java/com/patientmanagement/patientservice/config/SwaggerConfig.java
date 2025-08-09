@@ -24,6 +24,7 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI swaggerConfiguration() {
         return new OpenAPI()
+                .openapi("3.0.1")
                 .info(new Info()
                         .title("Patient Management System")
                         .description("Patient Management System for managing a large number of patients")
