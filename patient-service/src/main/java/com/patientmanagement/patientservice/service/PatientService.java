@@ -9,4 +9,7 @@ public interface PatientService {
     List<PatientResponseDTO> getAllPatients();
 
     PatientResponseDTO addPatient(PatientRequestDto patientRequestDto);
+
+    //    update patients by username
+    PatientResponseDTO updatePatient(String username, PatientRequestDto patientRequestDto);
 }
