@@ -2,14 +2,13 @@ package com.patientmanagement.patientservice.controller;
 
 import com.patientmanagement.patientservice.dto.PatientRequestDto;
 import com.patientmanagement.patientservice.dto.PatientResponseDTO;
+import com.patientmanagement.patientservice.model.Patient;
 import com.patientmanagement.patientservice.repository.PatientRepository;
 import com.patientmanagement.patientservice.service.PatientService;
+import com.patientmanagement.patientservice.util.IdGenerator;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,19 +25,19 @@ public class PatientController {
         this.patientRepository = patientRepository;
     }
 
-    // Get all patients controller method
     @GetMapping("/all-patients")
     public ResponseEntity<List<PatientResponseDTO>> getAllPatients() {
         List<PatientResponseDTO> patients = patientService.getAllPatients();
         return ResponseEntity.ok(patients);
     }
 
-//    add patient Controller method
-
     @PostMapping("/add-patient")
-    public PatientResponseDTO addPatient(PatientRequestDto patientRequestDto) {
-        Patient patient = patientRepository.save(
-                patientRequestDto.toModel(patientRequestDto);
-        )
+    public ResponseEntity<PatientResponseDTO> addPatient(@RequestBody PatientRequestDto patientRequestDto) {
+        String id = IdGenerator.generatePatientId();
+        Patient patient = PatientRequestDto.toModel(patientRequestDto, id);
+        Patient savedPatient = patientRepository.save(patient);
+        // You need a mapper to convert Patient to PatientResponseDTO
+        PatientResponseDTO responseDTO = patientService.toResponseDTO(savedPatient);
+        return ResponseEntity.ok(responseDTO);
     }
 }
