@@ -30,7 +30,7 @@ public class PatientMapper {
 
         public static Patient toModel(PatientRequestDto dto, String id) {
             Patient patient = new Patient();
-//            patient.setId(id);
+            patient.setId(id);
             patient.setFirstName(dto.getFirstName());
             patient.setLastName(dto.getLastName());
             patient.setUsername(dto.getUsername());
