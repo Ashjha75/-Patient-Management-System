@@ -48,4 +48,11 @@ public class PatientController {
         PatientResponseDTO patient = patientService.getPatientByUsername(patientusername);
         return ResponseEntity.ok(patient);
     }
+
+    @DeleteMapping("delete-patient/{patientusername}")
+    public ResponseEntity<PatientResponseDTO> deletePatient(@PathVariable("patientusername") String patientusername) {
+
+        patientService.deletePatient(patientusername);
+        return ResponseEntity.noContent().build();
+    }
 }
