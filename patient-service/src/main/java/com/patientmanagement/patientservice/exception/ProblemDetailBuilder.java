@@ -5,6 +5,20 @@ import org.springframework.http.ProblemDetail;
 import java.time.OffsetDateTime;
 import java.util.Map;
 
+/**
+ * Creates consistent, structured error responses using RFC 7807 Problem Details.
+ * <p>
+ * Why:
+ * <ul>
+ *   <li>Keeps all API error responses in the same format</li>
+ *   <li>Easy for clients and developers to read and debug</li>
+ * </ul>
+ * How:
+ * <ul>
+ *   <li>Builds ProblemDetail with status, title, detail, and timestamp</li>
+ *   <li>Allows adding extra properties (e.g., correlationId, errorCode)</li>
+ * </ul>
+ */
 
 public final class ProblemDetailBuilder {
 

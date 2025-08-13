@@ -13,12 +13,19 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * Utility class that provides mapping functionality between Patient domain model
- * and various DTO representations.
+ * Adds a unique "Correlation ID" to each incoming request for tracking.
  * <p>
- * This mapper simplifies the conversion between entity and DTOs, ensuring a clean
- * separation between the domain model and the external API representations.
- * </p>
+ * Why:
+ * <ul>
+ *   <li>Helps trace a single request across logs</li>
+ *   <li>Makes debugging easier in distributed systems</li>
+ * </ul>
+ * How:
+ * <ul>
+ *   <li>Checks for X-Correlation-Id header; generates one if missing</li>
+ *   <li>Stores it in MDC (for logs) and sets it in the response header</li>
+ *   <li>Removes it after the request is processed</li>
+ * </ul>
  */
 
 @Component
