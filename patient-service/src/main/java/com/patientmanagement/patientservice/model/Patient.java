@@ -1,20 +1,21 @@
 package com.patientmanagement.patientservice.model;
 
 
-    import com.patientmanagement.patientservice.util.enums.Gender;
-    import jakarta.persistence.*;
-    import jakarta.validation.constraints.Email;
-    import jakarta.validation.constraints.NotNull;
-    import jakarta.validation.constraints.Size;
-    import lombok.*;
-    import org.hibernate.annotations.CreationTimestamp;
-    import org.hibernate.annotations.UpdateTimestamp;
+import com.patientmanagement.patientservice.util.enums.Gender;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-    import java.io.Serial;
-    import java.io.Serializable;
-    import java.time.LocalDate;
-    import java.time.LocalDateTime;
-    import java.util.UUID;
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
     @Entity
     @Table(name = "patients")
     @Data // Lombok: generates getters, setters, toString, equals, hashCode
