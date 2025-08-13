@@ -1,9 +1,9 @@
 package com.patientmanagement.patientservice.mapper;
 
-         import com.patientmanagement.patientservice.dto.PatientRequestDto;
-         import com.patientmanagement.patientservice.dto.PatientResponseDTO;
-         import com.patientmanagement.patientservice.model.Patient;
-         import com.patientmanagement.patientservice.util.enums.Gender;
+import com.patientmanagement.patientservice.dto.PatientRequestDto;
+import com.patientmanagement.patientservice.dto.PatientResponseDTO;
+import com.patientmanagement.patientservice.model.Patient;
+import com.patientmanagement.patientservice.util.enums.Gender;
 
          /**
           * Utility class for mapping between Patient entities and DTOs.
