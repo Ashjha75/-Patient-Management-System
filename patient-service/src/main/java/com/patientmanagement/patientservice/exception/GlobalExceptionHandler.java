@@ -1,4 +1,4 @@
-package com.patientmanagement.patientservice.exception;// package com.example.exception;
+package com.patientmanagement.patientservice.exception;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,13 +18,46 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * {@code GlobalExceptionHandler} is a centralized Spring Boot exception handler
+ * for REST APIs in the Patient Management Service.
+ * <p>
+ * This class uses Spring's {@link RestControllerAdvice} to intercept exceptions
+ * thrown by controllers and return consistent, structured error responses
+ * based on {@link ProblemDetail}.
+ * <p>
+ * Each handler method logs the error, sets useful metadata (e.g., {@code path}, {@code correlationId}),
+ * and ensures API consumers get a predictable JSON structure for errors.
+ * <p>
+ * Typical error response format:
+ * <pre>
+ * {
+ *   "type": "about:blank",
+ *   "title": "Validation failed",
+ *   "status": 400,
+ *   "detail": "Request validation failed; check 'errors' for details.",
+ *   "path": "/patients",
+ *   "correlationId": "abc123",
+ *   "errors": { "name": "must not be blank" }
+ * }
+ * </pre>
+ *
+ * @see ProblemDetailBuilder Utility to create {@link ProblemDetail} objects with custom attributes
+ * @see MDC Mapped Diagnostic Context for adding correlation IDs to logs
+ */
 @Hidden
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    // 1) Validation errors (request body)
+    /**
+     * Handles validation failures for request bodies annotated with {@code @Valid}.
+     *
+     * @param ex  the {@link MethodArgumentNotValidException} containing validation errors
+     * @param req the {@link HttpServletRequest} for retrieving request metadata
+     * @return a {@link ProblemDetail} object with validation error messages and request details
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
         Map<String, String> fieldErrors = ex.getBindingResult()
@@ -43,7 +76,13 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
-    // 2) Custom domain exceptions (example)
+    /**
+     * Handles custom resource-not-found errors.
+     *
+     * @param ex  the {@link ResourceNotFound} exception
+     * @param req the current HTTP request
+     * @return a {@link ProblemDetail} indicating that the requested resource was not found
+     */
     @ExceptionHandler(ResourceNotFound.class)
     public ProblemDetail handleNotFound(ResourceNotFound ex, HttpServletRequest req) {
         ProblemDetail pd = ProblemDetailBuilder.forStatus(HttpStatus.NOT_FOUND.value(),
@@ -55,6 +94,13 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
+    /**
+     * Handles application-specific exceptions represented by {@link ApiException}.
+     *
+     * @param ex  the API exception
+     * @param req the current HTTP request
+     * @return a {@link ProblemDetail} describing the application error
+     */
     @ExceptionHandler(ApiException.class)
     public ProblemDetail handleApiException(ApiException ex, HttpServletRequest req) {
         ProblemDetail pd = ProblemDetailBuilder.forStatus(HttpStatus.BAD_REQUEST.value(),
@@ -66,7 +112,13 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
-    // 3) Common framework/infrastructure exceptions
+    /**
+     * Handles malformed JSON input.
+     *
+     * @param ex  the {@link HttpMessageNotReadableException} indicating parse failure
+     * @param req the current HTTP request
+     * @return a {@link ProblemDetail} instructing the client to fix JSON syntax or types
+     */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ProblemDetail handleBadJson(HttpMessageNotReadableException ex, HttpServletRequest req) {
         ProblemDetail pd = ProblemDetailBuilder.forStatus(HttpStatus.BAD_REQUEST.value(),
@@ -78,6 +130,13 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
+    /**
+     * Handles database constraint violations (e.g., unique key conflicts).
+     *
+     * @param ex  the {@link DataIntegrityViolationException}
+     * @param req the current HTTP request
+     * @return a {@link ProblemDetail} describing the constraint violation
+     */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ProblemDetail handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest req) {
         ProblemDetail pd = ProblemDetailBuilder.forStatus(HttpStatus.CONFLICT.value(),
@@ -89,6 +148,13 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
+    /**
+     * Handles requests for unmapped endpoints.
+     *
+     * @param ex  the {@link NoHandlerFoundException} indicating no matching handler
+     * @param req the current HTTP request
+     * @return a {@link ProblemDetail} describing the missing endpoint
+     */
     @ExceptionHandler(NoHandlerFoundException.class)
     public ProblemDetail handleNotFound(NoHandlerFoundException ex, HttpServletRequest req) {
         ProblemDetail pd = ProblemDetailBuilder.forStatus(HttpStatus.NOT_FOUND.value(),
@@ -99,10 +165,18 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
-    // 4) Catch-all (very important)
+    /**
+     * Handles all other unhandled exceptions.
+     * <p>
+     * This is a catch-all fallback to prevent stack traces from leaking to clients.
+     * The full exception stack trace is logged on the server side.
+     *
+     * @param ex  the uncaught exception
+     * @param req the current HTTP request
+     * @return a generic {@link ProblemDetail} advising the client to contact support
+     */
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleAll(Exception ex, HttpServletRequest req) {
-        // Log full stacktrace (server-side only)
         log.error("Unhandled exception for request {} - correlationId={}", req.getRequestURI(), MDC.get("correlationId"), ex);
 
         ProblemDetail pd = ProblemDetailBuilder.forStatus(HttpStatus.INTERNAL_SERVER_ERROR.value(),
