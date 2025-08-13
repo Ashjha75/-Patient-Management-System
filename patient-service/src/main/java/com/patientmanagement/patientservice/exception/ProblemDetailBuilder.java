@@ -5,41 +5,24 @@ import org.springframework.http.ProblemDetail;
 import java.time.OffsetDateTime;
 import java.util.Map;
 
-/**
- * Utility class for creating and enriching RFC 7807 Problem Details in the Patient Management System.
- * <p>
- * This builder simplifies the creation of standardized error responses following the
- * Problem Details for HTTP APIs specification (RFC 7807). It automatically adds common
- * properties like timestamps and provides methods to add custom details.
- * </p>
- * <p>
- * Usage examples:
- * <pre>
- *     // Basic usage with status, title, and detail
- *     ProblemDetail problem = ProblemDetailBuilder.forStatus(404, "Resource Not Found",
- *                               "Patient with ID 123 could not be found");
- *
- *     // Adding extra properties
- *     Map&lt;String, Object&gt; extras = Map.of(
- *         "errorCode", "PATIENT-404",
- *         "supportContact", "support@example.com"
- *     );
- *     ProblemDetail enriched = ProblemDetailBuilder.withDetails(problem, extras);
- *
- *     // In exception handlers
- *     return ResponseEntity
- *            .status(HttpStatus.NOT_FOUND)
- *            .body(ProblemDetailBuilder.forStatus(404, "Not Found", ex.getMessage()));
- * </pre>
- * </p>
- *
- * @see ProblemDetail
- * @see <a href="https://datatracker.ietf.org/doc/html/rfc7807">RFC 7807</a>
- */
+
 public final class ProblemDetailBuilder {
+
+    /**
+     * Private constructor to prevent instantiation since this is a utility class.
+     */
     private ProblemDetailBuilder() {
     }
 
+    /**
+     * Creates a new {@link ProblemDetail} with the specified status, title, and detail message.
+     * Also adds a {@code timestamp} property in ISO-8601 format (UTC offset).
+     *
+     * @param status the HTTP status code (e.g., 400, 404, 500)
+     * @param title  a short, human-readable summary of the problem
+     * @param detail a detailed explanation of the problem for debugging
+     * @return a new {@link ProblemDetail} object with basic metadata
+     */
     public static ProblemDetail forStatus(int status, String title, String detail) {
         ProblemDetail pd = ProblemDetail.forStatus(status);
         pd.setTitle(title);
@@ -48,8 +31,25 @@ public final class ProblemDetailBuilder {
         return pd;
     }
 
+    /**
+     * Adds extra properties to an existing {@link ProblemDetail} instance.
+     * <p>
+     * This can be used to add context-specific information like:
+     * <ul>
+     *     <li>Custom error codes</li>
+     *     <li>Request path</li>
+     *     <li>Correlation IDs</li>
+     *     <li>Support contact details</li>
+     * </ul>
+     *
+     * @param base       the existing {@link ProblemDetail} to enrich
+     * @param extraProps a map of additional properties to set; ignored if {@code null}
+     * @return the same {@link ProblemDetail} instance with new properties added
+     */
     public static ProblemDetail withDetails(ProblemDetail base, Map<String, Object> extraProps) {
-        if (extraProps != null) extraProps.forEach(base::setProperty);
+        if (extraProps != null) {
+            extraProps.forEach(base::setProperty);
+        }
         return base;
     }
 }
