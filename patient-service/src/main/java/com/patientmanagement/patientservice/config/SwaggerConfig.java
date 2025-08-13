@@ -15,6 +15,26 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
+/**
+ * SwaggerConfig sets up and customizes the OpenAPI (Swagger) documentation for the Patient Management System API.
+ *
+ * <p><b>Key Features:</b></p>
+ * <ul>
+ *   <li><b>API Metadata:</b> Sets title, description, version, contact, and license for the API docs.</li>
+ *   <li><b>Server Environments:</b> Defines local and DEV server URLs for API testing and documentation.</li>
+ *   <li><b>API Tags:</b> Groups endpoints for better organization in the Swagger UI (e.g., Health Check, Patient).</li>
+ *   <li><b>Security:</b> Configures JWT Bearer authentication for secured endpoints.</li>
+ * </ul>
+ *
+ * <p><b>How it works:</b></p>
+ * <ul>
+ *   <li>Spring Boot auto-detects this configuration and exposes interactive API docs at /swagger-ui.html (if using springdoc-openapi-ui).</li>
+ *   <li>Developers and testers can explore, try, and understand the API endpoints directly from the browser.</li>
+ * </ul>
+ *
+ * <p><b>Author:</b> Ashish Jha</p>
+ * <p><b>GitHub:</b> https://github.com/Ashjha75/-Patient-Management-System</p>
+ */
 @Configuration
 public class SwaggerConfig {
 
