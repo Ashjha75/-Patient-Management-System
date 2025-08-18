@@ -2,6 +2,8 @@ package com.patientmanagement.patientservice.serviceImplementation;
 
 import com.patientmanagement.patientservice.dto.PatientRequestDto;
 import com.patientmanagement.patientservice.dto.PatientResponseDTO;
+import com.patientmanagement.patientservice.dto.PageInfoDTO;
+import com.patientmanagement.patientservice.dto.PatientPageResponseDTO;
 import com.patientmanagement.patientservice.exception.ApiException;
 import com.patientmanagement.patientservice.exception.ResourceNotFound;
 import com.patientmanagement.patientservice.mapper.PatientMapper;
@@ -42,12 +44,16 @@ public class PatientServiceImpl implements PatientService {
                 .toList();
 
         PatientPageResponseDTO response = new PatientPageResponseDTO();
-        response.setPatients(patientDTOs);
-        response.setPageNumber(patientPage.getNumber());
-        response.setPageSize(patientPage.getSize());
-        response.setTotalElements(patientPage.getTotalElements());
-        response.setTotalPages(patientPage.getTotalPages());
-        response.setLastPage(patientPage.isLast());
+        response.setData(patientDTOs);
+
+        PageInfoDTO pageInfo = new PageInfoDTO();
+        pageInfo.setPageNumber(patientPage.getNumber());
+        pageInfo.setPageSize(patientPage.getSize());
+        pageInfo.setTotalElements(patientPage.getTotalElements());
+        pageInfo.setTotalPages(patientPage.getTotalPages());
+        pageInfo.setLastPage(patientPage.isLast());
+
+        response.setPageInfo(pageInfo);
 
         return response;
     }
