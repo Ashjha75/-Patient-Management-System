@@ -10,6 +10,10 @@ import com.patientmanagement.patientservice.repository.PatientRepository;
 import com.patientmanagement.patientservice.service.PatientService;
 import com.patientmanagement.patientservice.util.IdGenerator;
 import com.patientmanagement.patientservice.util.enums.Gender;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -27,12 +31,25 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public List<PatientResponseDTO> getAllPatients() {
-        List<Patient> patients = patientRepository.findAll();
-        System.out.println("Fetching all patients from the database..." + patients.size());
-        return patients.stream()
+    public PatientPageResponseDTO getAllPatients(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+        Page<Patient> patientPage = patientRepository.findAll(pageDetails);
+
+        List<PatientResponseDTO> patientDTOs = patientPage.getContent()
+                .stream()
                 .map(PatientMapper::toDTO)
                 .toList();
+
+        PatientPageResponseDTO response = new PatientPageResponseDTO();
+        response.setPatients(patientDTOs);
+        response.setPageNumber(patientPage.getNumber());
+        response.setPageSize(patientPage.getSize());
+        response.setTotalElements(patientPage.getTotalElements());
+        response.setTotalPages(patientPage.getTotalPages());
+        response.setLastPage(patientPage.isLast());
+
+        return response;
     }
 
     @Override

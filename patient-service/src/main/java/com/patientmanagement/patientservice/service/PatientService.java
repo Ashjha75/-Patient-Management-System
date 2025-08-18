@@ -7,7 +7,7 @@ import java.util.List;
 
 
 public interface PatientService {
-    List<PatientResponseDTO> getAllPatients();
+    List<PatientResponseDTO> getAllPatients(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
 
     PatientResponseDTO addPatient(PatientRequestDto patientRequestDto);
 
