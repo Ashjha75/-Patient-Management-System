@@ -30,7 +30,7 @@ public class PatientController {
             @RequestParam(value = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
             @RequestParam(value = "sortBy", defaultValue = AppConstants.SORT_PATIENTS_BY, required = false) String sortBy,
             @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_DIR, required = false) String sortOrder) {
-        List<PatientResponseDTO> patients = patientService.getAllPatients();
+        List<PatientResponseDTO> patients = patientService.getAllPatients(pageNumber, pageSize, sortBy, sortOrder);
         return ResponseEntity.ok(patients);
     }
 
