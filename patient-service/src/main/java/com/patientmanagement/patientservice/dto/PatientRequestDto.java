@@ -67,7 +67,7 @@ public class PatientRequestDto {
     @Schema(defaultValue = "10001")
     private String postalCode;
 
-    @NotBlank(groups = CreatePatientValidationGroup.class, message = "Registration date is required")
+    @NotNull(groups = CreatePatientValidationGroup.class, message = "Registration date is required")
     @Schema(defaultValue = "2024-01-01")
     private LocalDate registrationDate;
 }
