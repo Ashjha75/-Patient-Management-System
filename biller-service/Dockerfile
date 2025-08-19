@@ -17,6 +17,6 @@ WORKDIR /app
 COPY --from=builder ./app/target/billing-service-0.0.1-SNAPSHOT.jar ./app.jar
 
 EXPOSE 8001
-EXPOSE 9090
+EXPOSE 9091
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

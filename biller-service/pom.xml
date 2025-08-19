@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.patientmanagement</groupId>
-    <artifactId>biller-service</artifactId>
+    <artifactId>billing-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>biller-service</name>
-    <description>biller-service</description>
+    <name>billing-service</name>
+    <description>billing-service</description>
     <url/>
     <licenses>
         <license/>
