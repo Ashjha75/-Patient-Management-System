@@ -1,5 +1,7 @@
 package com.patientmanagement.patientservice.grpc;
 
+import billing.BillingRequest;
+import billing.BillingResponse;
 import billing.BillingServiceGrpc;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +25,10 @@ public class BillingServiceGrpcClient {
         this.blockingStub = BillingServiceGrpc.newBlockingStub(channel);
 
         log.info("GRPC Server Info {}:{}", serverAddress, serverPort);
+
+    }
+
+    public BillingResponse createBilling(BillingRequest billingRequest) {
 
     }
 }
