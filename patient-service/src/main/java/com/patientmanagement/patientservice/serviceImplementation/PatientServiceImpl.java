@@ -6,6 +6,7 @@ import com.patientmanagement.patientservice.dto.PageInfoDTO;
 import com.patientmanagement.patientservice.dto.PatientPageResponseDTO;
 import com.patientmanagement.patientservice.exception.ApiException;
 import com.patientmanagement.patientservice.exception.ResourceNotFound;
+import com.patientmanagement.patientservice.grpc.BillingServiceGrpcClient;
 import com.patientmanagement.patientservice.mapper.PatientMapper;
 import com.patientmanagement.patientservice.model.Patient;
 import com.patientmanagement.patientservice.repository.PatientRepository;
@@ -27,9 +28,11 @@ import java.util.List;
 @Service
 public class PatientServiceImpl implements PatientService {
     private final PatientRepository patientRepository;
+    private final BillingServiceGrpcClient billingServiceGrpcClient;
 
-    public PatientServiceImpl(PatientRepository patientRepository) {
+    public PatientServiceImpl(PatientRepository patientRepository, BillingServiceGrpcClient billingServiceGrpcClient) {
         this.patientRepository = patientRepository;
+        this.billingServiceGrpcClient = billingServiceGrpcClient;
     }
 
     @Override
@@ -69,6 +72,7 @@ public class PatientServiceImpl implements PatientService {
         String id = IdGenerator.generatePatientId();
         Patient patient = PatientMapper.toModel(patientRequestDto, id);
         Patient savedPatient = patientRepository.save(patient);
+        billingServiceGrpcClient.createBillingAccount(savedPatient.getId(), savedPatient.getFirstName(), savedPatient.getEmail());
         return PatientMapper.toDTO(savedPatient);
     }
 
