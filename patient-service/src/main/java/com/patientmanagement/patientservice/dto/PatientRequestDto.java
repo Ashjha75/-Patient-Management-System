@@ -1,6 +1,9 @@
 package com.patientmanagement.patientservice.dto;
 
 import com.patientmanagement.patientservice.dto.validators.CreatePatientValidationGroup;
+import com.patientmanagement.patientservice.dto.validators.UpdatePatientValidationGroup;
+import com.patientmanagement.patientservice.dto.validators.ValidAge;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -13,8 +16,8 @@ import java.time.LocalDate;
 @Data
 public class PatientRequestDto {
 
-//        @Schema(defaultValue = "PAT1234567890")
-//        private String id;
+    @NotNull(groups = UpdatePatientValidationGroup.class, message = "id field is required for updates")
+    private String id;
 
     @NotBlank(message = "First name is required")
     @Size(min = 1, max = 50, message = "First name must be between 1 and 50 characters")
@@ -36,6 +39,7 @@ public class PatientRequestDto {
     @Schema(defaultValue = "john.doe@example.com")
     private String email;
 
+    @ValidAge(min = 18, message = "Patient must be at least 18 years old")
     @NotNull(message = "Date of birth is required")
     @Schema(defaultValue = "2000-01-01")
     private LocalDate dateOfBirth;
