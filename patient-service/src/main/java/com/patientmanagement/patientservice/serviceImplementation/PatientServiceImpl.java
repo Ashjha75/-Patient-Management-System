@@ -5,6 +5,7 @@ import com.patientmanagement.patientservice.dto.PatientResponseDTO;
 import com.patientmanagement.patientservice.dto.PageInfoDTO;
 import com.patientmanagement.patientservice.dto.PatientPageResponseDTO;
 import com.patientmanagement.patientservice.exception.ApiException;
+import com.patientmanagement.patientservice.exception.InvalidInputException;
 import com.patientmanagement.patientservice.exception.ResourceNotFound;
 import com.patientmanagement.patientservice.grpc.BillingServiceGrpcClient;
 import com.patientmanagement.patientservice.mapper.PatientMapper;
@@ -64,10 +65,10 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public PatientResponseDTO addPatient(PatientRequestDto patientRequestDto) {
         if (patientRepository.existsByUsername(patientRequestDto.getUsername())) {
-            throw new ApiException("Username already exists");
+            throw new InvalidInputException("Username already exists");
         }
         if (patientRepository.existsByEmail(patientRequestDto.getEmail())) {
-            throw new ApiException("Email already exists");
+            throw new InvalidInputException("Email already exists");
         }
         String id = IdGenerator.generatePatientId();
         Patient patient = PatientMapper.toModel(patientRequestDto, id);
