@@ -1,5 +1,6 @@
 package com.patientmanagement.patientservice.exception;
 
+import com.patientmanagement.patientservice.dto.ErrorResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -8,13 +9,16 @@ import org.slf4j.MDC;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -59,21 +63,21 @@ public class GlobalExceptionHandler {
      * @return a {@link ProblemDetail} object with validation error messages and request details
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ProblemDetail handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
         Map<String, String> fieldErrors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage, (a, b) -> a + "; " + b));
 
-        ProblemDetail pd = ProblemDetailBuilder.forStatus(HttpStatus.BAD_REQUEST.value(),
-                "Validation failed",
-                "Request validation failed; check 'errors' for details.");
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now(),
+                "Validation Failed",
+                req.getRequestURI(),
+                fieldErrors
+        );
 
-        pd.setProperty("errors", fieldErrors);
-        pd.setProperty("path", req.getRequestURI());
-        pd.setProperty("correlationId", MDC.get("correlationId"));
-        log.warn("Validation failed for request {}: {}", req.getRequestURI(), fieldErrors);
-        return pd;
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     /**
