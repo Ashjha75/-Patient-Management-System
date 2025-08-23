@@ -64,10 +64,10 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public PatientResponseDTO addPatient(PatientRequestDto patientRequestDto) {
         if (patientRepository.existsByUsername(patientRequestDto.getUsername())) {
-            throw new IllegalArgumentException("Username already exists");
+            throw new ApiException("Username already exists");
         }
         if (patientRepository.existsByEmail(patientRequestDto.getEmail())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new ApiException("Email already exists");
         }
         String id = IdGenerator.generatePatientId();
         Patient patient = PatientMapper.toModel(patientRequestDto, id);
@@ -97,10 +97,10 @@ public class PatientServiceImpl implements PatientService {
                 && !patient.getEmail().equals(patientRequestDto.getEmail().trim())) {
             String email = patientRequestDto.getEmail().trim();
             if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
-                throw new IllegalArgumentException("Invalid email format");
+                throw new ApiException("Invalid email format");
             }
             if (patientRepository.existsByEmail(email)) {
-                throw new IllegalArgumentException("Email already exists");
+                throw new ApiException("Email already exists");
             }
             patient.setEmail(email);
         }
@@ -109,7 +109,7 @@ public class PatientServiceImpl implements PatientService {
         if (patientRequestDto.getDateOfBirth() != null) {
             LocalDate dob = patientRequestDto.getDateOfBirth();
             if (dob.isAfter(LocalDate.now())) {
-                throw new IllegalArgumentException("Date of birth cannot be in the future");
+                throw new ApiException("Date of birth cannot be in the future");
             }
             patient.setDateOfBirth(dob);
         }

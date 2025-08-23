@@ -46,7 +46,7 @@ import java.time.LocalDateTime;
         private String username;
 
         @NotNull
-        @Email
+        @Email(message = "Please provide correct email")
         @Column(unique = true, nullable = false)
         private String email;
 
