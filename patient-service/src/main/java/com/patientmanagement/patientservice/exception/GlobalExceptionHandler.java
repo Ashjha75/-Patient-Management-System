@@ -73,7 +73,6 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST.value(),
                 LocalDateTime.now(),
                 "Validation Failed",
-                req.getRequestURI(),
                 fieldErrors
         );
 
@@ -114,6 +113,22 @@ public class GlobalExceptionHandler {
         pd.setProperty("correlationId", MDC.get("correlationId"));
         log.warn("API error: {}", ex.getMessage());
         return pd;
+    }
+    @ExceptionHandler(InvalidInputException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidInputException(MethodArgumentNotValidException ex, HttpServletRequest req) {
+        Map<String, String> fieldErrors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage, (a, b) -> a + "; " + b));
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now(),
+                "Validation Failed",
+                fieldErrors
+        );
+        log.warn("API error: {}", ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     /**
