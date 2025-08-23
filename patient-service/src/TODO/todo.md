@@ -1,7 +1,7 @@
 
 ---
 
-# 📚 ** Detailed Syllabus for Spring Boot CRUD Project **
+# 📚 Detailed Syllabus for Spring Boot CRUD Project
 
 ---
 
