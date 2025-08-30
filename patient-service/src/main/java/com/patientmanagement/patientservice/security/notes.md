@@ -41,11 +41,37 @@ Use it to hash passwords before storing them in your database; **never store pla
     - Token generation
     - Token validation
     - Extracting the username from the token
+# JwtUtils – Main Responsibilities
 
+- **Extract JWT from Header**
+- **Generate Secure JWT Cookie**
+- **Clear JWT Cookie (Logout)**
+- **Generate JWT from Username**
+- **Extract JWT from Cookies**
+- **Create Cryptographic Signing Key**
+- **Extract Username from JWT**
+- **Validate JWT with Error Handling**
+
+---
 ## AuthTokenFilter
 
 - Filters incoming requests to check for a valid JWT in the header.
 - Extracts the JWT from the request header, validates it, and configures the Spring Security context with user details if the token is valid.
+
+# AuthTokenFilter – Main Responsibilities
+
+- **Intercept HTTP Requests (OncePerRequestFilter)**
+- **Extract JWT (Authorization header → fallback to cookies)**
+- **Validate JWT using JwtUtils**
+- **Extract Username from JWT**
+- **Load UserDetails from Database**
+- **Create Authentication Token (UsernamePasswordAuthenticationToken)**
+- **Attach Request Details to Authentication**
+- **Set Authentication in SecurityContext**
+- **Handle Invalid or Missing Token**
+- **Continue with Filter Chain**
+
+---
 
 ## AuthEntryPointJwt
 
