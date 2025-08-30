@@ -85,6 +85,9 @@ import java.time.LocalDateTime;
         @Column(nullable = false)
         private LocalDate registrationDate;
 
+
+
+
         @CreationTimestamp
         @Column(updatable = false)
         // Automatically set when the entity is created
