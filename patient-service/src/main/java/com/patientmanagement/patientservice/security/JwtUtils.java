@@ -3,9 +3,7 @@ package com.patientmanagement.patientservice.security;
 
 import brave.http.HttpServerRequest;
 import ch.qos.logback.core.util.StringUtil;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
@@ -77,12 +75,7 @@ public class JwtUtils {
         Date issuedDate = new Date();
         Date expirationDate = new Date(issuedDate.getTime() + Long.parseLong(expirationTimeMS));
 
-        return Jwts.builder()
-                .subject(username.trim())
-                .issuedAt(issuedDate)
-                .expiration(expirationDate)
-                .signWith(getSigningKey())
-                .compact();
+        return Jwts.builder().subject(username.trim()).issuedAt(issuedDate).expiration(expirationDate).signWith(getSigningKey()).compact();
     }
 
 
@@ -93,11 +86,7 @@ public class JwtUtils {
         }
 
         try {
-            Claims claims = Jwts.parser()
-                    .verifyWith((SecretKey) Key())
-                    .build()
-                    .parseSignedClaims(token.trim())
-                    .getPayload();
+            Claims claims = Jwts.parser().verifyWith((SecretKey) Key()).build().parseSignedClaims(token.trim()).getPayload();
 
             return claims.getSubject();
 
@@ -108,9 +97,34 @@ public class JwtUtils {
     }
 
 
-//    4. Generate secure JWT cookies
+//    4. Validate JWT with error handling
 
-    public String
+    private boolean validateJwtToken(String token) {
+        if (!StringUtils.hasText(token)) {
+            throw new IllegalArgumentException("Token cannot be empty");
+        }
+
+        try {
+            Jwts.parser().verifyWith((SecretKey) Key()).build().parseSignedClaims(token.trim());
+            logger.debug("JWT token validation successful");
+            return true;
+
+        } catch (SecurityException ex) {
+            logger.error("Invalid JWT signature: {}", ex.getMessage());
+        } catch (MalformedJwtException ex) {
+            logger.error("Invalid JWT format: {}", ex.getMessage());
+        } catch (ExpiredJwtException ex) {
+            logger.error("JWT token expired: {}", ex.getMessage());
+        } catch (UnsupportedJwtException ex) {
+            logger.error("Unsupported JWT token: {}", ex.getMessage());
+        } catch (IllegalArgumentException ex) {
+            logger.error("JWT claims string is empty: {}", ex.getMessage());
+        } catch (Exception ex) {
+            logger.error("Unexpected JWT validation error: {}", ex.getMessage());
+        }
+
+        return false;
+    }
 
 
     /*HELPER METHOD __*/
