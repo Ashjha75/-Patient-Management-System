@@ -79,9 +79,37 @@ Use it to hash passwords before storing them in your database; **never store pla
 - When an unauthorized request is detected, it:
     - Logs the error
     - Returns a JSON response with an error message, status code, and attempted path
+  
+# AuthEntryPointJwt – Main Responsibilities
 
+- **Intercept Unauthorized Access Attempts**
+- **Log Unauthorized Attempts (URI, IP, Error)**
+- **Set HTTP 401 Unauthorized Response**
+- **Build JSON Error Response (status, error, message, path, timestamp, correlationId)**
+- **Extract Client IP Address (X-Forwarded-For, X-Real-IP, fallback remoteAddr)**
+- **Generate or Reuse Correlation ID (X-Correlation-ID or new ID)**
+- **Write Standardized JSON Error Response to Client**
+
+---
 ## SecurityConfig
 
 - Configures Spring Security filters and rules for the application.
 - Sets up the security filter chain, permitting or denying access based on paths and roles.
 - Configures session management to **stateless**, which is crucial for JWT usage.
+# WebSecurityConfig – Main Responsibilities
+
+- **Define JWT Authentication Filter Bean**
+- **Configure DaoAuthenticationProvider**
+- **Provide PasswordEncoder (BCrypt)**
+- **Expose AuthenticationManager Bean**
+- **Configure CORS Policy**
+- **Main SecurityFilterChain Setup**
+  - CSRF Disabled
+  - CORS Enabled
+  - Stateless Session Management
+  - Exception Handling with AuthEntryPointJwt
+  - URL-based Authorization Rules
+  - Security Headers (HSTS, CSP, Frame Options)
+  - Register Custom Authentication Provider
+  - Insert AuthTokenFilter Before UsernamePasswordAuthenticationFilter
+- **Define WebSecurityCustomizer (Ignore Swagger/Static Paths)**
