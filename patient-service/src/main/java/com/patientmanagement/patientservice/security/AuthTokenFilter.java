@@ -7,10 +7,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -67,16 +69,30 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
                 logger.debug("Valid JWT found for user: {}", username);
 
+                // Load user details from database
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
+                // Create authentication token
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+                // Set additional request details
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                // Set authentication in security context
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                logger.debug("User authenticated successfully with roles: {}", userDetails.getAuthorities());
+
+            } else {
+                logger.debug("No valid JWT token found for request: {}", requestURI);
             }
+
         } catch (UsernameNotFoundException ex) {
             logger.warn("User not found during JWT authentication: {}", ex.getMessage());
             // Clear any partial authentication context
             SecurityContextHolder.clearContext();
 
         } catch (Exception ex) {
-            logger.error("JWT authentication failed for request {}: {}",
-                    requestURI, ex.getMessage());
+            logger.error("JWT authentication failed for request {}: {}", requestURI, ex.getMessage());
             // Clear security context on any authentication error
             SecurityContextHolder.clearContext();
         }
