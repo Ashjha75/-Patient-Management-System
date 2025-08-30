@@ -1,4 +1,4 @@
-         # Key Security Principles
+# Key Security Principles
 
 - **Least Privilege**
 - **Secure by Design**
@@ -15,9 +15,23 @@
 Bcrypt is a password hashing function designed for secure password storage.  
 It automatically handles salt generation and is slow by design to resist brute-force attacks.  
 Use it to hash passwords before storing them in your database; **never store plain text passwords**.
-
 ---
 
+# JWT – Main Points
+
+- **Compact & Self-contained** → JWTs carry authentication and authorization data in a single token.
+- **Structure** → Consists of three parts:
+    1. **Header** (algorithm & token type)
+    2. **Payload** (claims like user info, roles, expiration)
+    3. **Signature** (verifies integrity and authenticity)
+- **Stateless** → No need to store session on the server; all info is in the token.
+- **Signed** → Ensures data integrity using secret key (HMAC) or public/private keys (RSA/ECDSA).
+- **Expiration** → Includes `exp` claim to limit token lifetime for security.
+- **Transport** → Commonly sent in the HTTP `Authorization` header as `Bearer <token>`.
+- **Use Cases** → Authentication, authorization, and secure information exchange.
+
+---
+# `Files 📂`
 # Security Components
 
 ## JwtUtils
