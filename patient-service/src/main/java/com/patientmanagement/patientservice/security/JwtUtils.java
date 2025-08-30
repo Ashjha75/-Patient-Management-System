@@ -3,6 +3,7 @@ package com.patientmanagement.patientservice.security;
 
 import brave.http.HttpServerRequest;
 import ch.qos.logback.core.util.StringUtil;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -84,9 +85,36 @@ public class JwtUtils {
                 .compact();
     }
 
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+
+    //    3. Extract username from JWT
+    public String getUserNameFromJwtToken(String token) {
+        if (!StringUtils.hasText(token)) {
+            throw new IllegalArgumentException("Token cannot be empty");
+        }
+
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith((SecretKey) Key())
+                    .build()
+                    .parseSignedClaims(token.trim())
+                    .getPayload();
+
+            return claims.getSubject();
+
+        } catch (Exception e) {
+            logger.error("Failed to extract username from JWT: {}", e.getMessage());
+            throw new RuntimeException("Invalid JWT token", e);
+        }
     }
 
 
+//    4. Generate secure JWT cookies
+
+    public String
+
+
+    /*HELPER METHOD __*/
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+    }
 }
