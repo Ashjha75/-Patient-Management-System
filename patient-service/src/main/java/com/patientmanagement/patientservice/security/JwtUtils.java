@@ -75,7 +75,7 @@ public class JwtUtils {
         Date issuedDate = new Date();
         Date expirationDate = new Date(issuedDate.getTime() + Long.parseLong(expirationTimeMS));
 
-        return Jwts.builder().subject(username.trim()).issuedAt(issuedDate).expiration(expirationDate).signWith(getSigningKey()).compact();
+        return Jwts.builder().subject(username.trim()).issuedAt(issuedDate).expiration(expirationDate).signWith(Key()).compact();
     }
 
 
@@ -128,7 +128,7 @@ public class JwtUtils {
 
 
     /*HELPER METHOD __*/
-    private Key getSigningKey() {
+    private Key Key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 }
