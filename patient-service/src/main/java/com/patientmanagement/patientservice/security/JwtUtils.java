@@ -99,7 +99,7 @@ public class JwtUtils {
 
 //    4. Validate JWT with error handling
 
-    private boolean validateJwtToken(String token) {
+    public boolean validateJwtToken(String token) {
         if (!StringUtils.hasText(token)) {
             throw new IllegalArgumentException("Token cannot be empty");
         }

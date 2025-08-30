@@ -7,8 +7,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -61,9 +63,32 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         try {
             String jwt = parseJwt(request);
 
-            if(StringUtils.hasText(jwt) && jwtUtils.validateJwtToken(jwt))
-        } catch (Exception e) {
+            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+                String username = jwtUtils.getUserNameFromJwtToken(jwt);
+                logger.debug("Valid JWT found for user: {}", username);
 
+
+            }
+        } catch (UsernameNotFoundException ex) {
+            logger.warn("User not found during JWT authentication: {}", ex.getMessage());
+            // Clear any partial authentication context
+            SecurityContextHolder.clearContext();
+
+        } catch (Exception ex) {
+            logger.error("JWT authentication failed for request {}: {}",
+                    requestURI, ex.getMessage());
+            // Clear security context on any authentication error
+            SecurityContextHolder.clearContext();
         }
+    }
+
+    private String parseJwt(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+
+        String jwt = jwtUtils.getJwtFromHeader(request);
+        logger.debug("JWT received: {}", jwt);
+        return jwt;
     }
 }
