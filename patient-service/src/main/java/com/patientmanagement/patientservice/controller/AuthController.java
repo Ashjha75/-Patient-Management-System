@@ -37,11 +37,11 @@ public class AuthController {
 
     @PostMapping("/signin")
     @Operation(summary = "Authenticate user", description = "Authenticate user and return JWT token")
-    public ResponseEntity<UserInfoResponse> authenticateUser(@RequestBody PatientRequestDto patientRequest) {
+    public ResponseEntity<UserInfoResponse> authenticateUser(@RequestBody userRequestDto userRequest) {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(patientRequest.getUsername(), "passwprd1")
+                    new UsernamePasswordAuthenticationToken(patientRequest.getUsername(), "password1")
             );
         } catch (AuthenticationException e) {
             Map<String, Object> map = new HashMap<>();
