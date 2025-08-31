@@ -1,8 +1,8 @@
 package com.patientmanagement.patientservice.security;
 
 
-import brave.http.HttpServerRequest;
-import ch.qos.logback.core.util.StringUtil;
+import java.nio.charset.StandardCharsets;
+
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -15,6 +15,7 @@ import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -126,6 +127,39 @@ public class JwtUtils {
         return false;
     }
 
+// Add this method to your existing JwtUtils class
+
+    /**
+     * Extracts the expiration time from a JWT token.
+     *
+     * @param token The JWT token
+     * @return LocalDateTime representing when the token expires
+     */
+    public LocalDateTime getExpirationFromToken(String token) {
+        if (!StringUtils.hasText(token)) {
+            throw new IllegalArgumentException("Token cannot be empty");
+        }
+
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith((SecretKey) Key())
+                    .build()
+                    .parseSignedClaims(token.trim())
+                    .getPayload();
+
+            Date expiration = claims.getExpiration();
+
+            // Convert Date to LocalDateTime
+            return expiration.toInstant()
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDateTime();
+
+        } catch (Exception e) {
+            logger.error("Failed to extract expiration from JWT: {}", e.getMessage());
+            // Return current time + default expiration as fallback
+            return LocalDateTime.now().plusHours(24);
+        }
+    }
 
     /*HELPER METHOD __*/
     private Key Key() {
