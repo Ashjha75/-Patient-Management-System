@@ -107,4 +107,22 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         logger.debug("JWT received: {}", jwt);
         return jwt;
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+
+        // Skip JWT processing for permitted paths
+        return path.startsWith("/api/auth/") ||
+                path.startsWith("/api/public/") ||
+                path.startsWith("/api/v1/docs") ||
+                path.equals("/health") ||
+                path.startsWith("/v3/api-docs") ||
+                path.startsWith("/api/v1/swagger-ui") ||
+                path.equals("/api/v1/swagger-ui.html") ||
+                path.startsWith("/api/v1/swagger-resources") ||
+                path.startsWith("/webjars") ||
+                path.equals("/favicon.ico");
+    }
+
 }
