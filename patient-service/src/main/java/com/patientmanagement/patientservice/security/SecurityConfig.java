@@ -6,6 +6,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -47,47 +48,33 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/public/**").permitAll()
+        http.csrf(AbstractHttpConfigurer::disable).cors(cors -> cors.configurationSource(corsConfigurationSource())).exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler)).sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(auth -> auth
+                // Public API endpoints
+                .requestMatchers("/api/auth/**").permitAll().requestMatchers("/api/public/**").permitAll().requestMatchers("/api/v1/docs/**").permitAll()  // Add this line
 
-                        // API docs / Swagger
-                        .requestMatchers("/v3/api-docs/**").permitAll()
-                        .requestMatchers("/swagger-ui/**").permitAll()
-                        .requestMatchers("/swagger-resources/**").permitAll()
+                // Swagger/OpenAPI
+                .requestMatchers("/v3/api-docs/**", "/api/v1/swagger-ui/**", "/api/v1/swagger-ui.html", "/api/v1/swagger-resources/**", "/webjars/**").permitAll()
 
-                        // Everything else requires auth
-                        .anyRequest().authenticated()
-                )
-                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
+                // Health check
+                .requestMatchers("/health", "/favicon.ico").permitAll()
 
-        // Add JWT filter before username/password authentication filter
+                // Everything else requires authentication
+                .anyRequest().authenticated()).headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
+
         http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // NOTE: In production, replace with exact allowed origins (no wildcards).
-        configuration.setAllowedOriginPatterns(Arrays.asList(
-                "http://localhost:*",
-                "https://mydomain.com"
-        ));
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:*", "https://mydomain.com"));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList(
-                "Authorization", "Content-Type", "X-Requested-With", "Accept",
-                "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"
-        ));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(Duration.ofHours(1));
 
@@ -105,20 +92,12 @@ public class SecurityConfig {
     public CommandLineRunner init(JdbcUserDetailsManager manager, PasswordEncoder passwordEncoder) {
         return args -> {
             if (!manager.userExists("user1")) {
-                manager.createUser(
-                        User.withUsername("user1")
-                                .password(passwordEncoder.encode("password1")) // DEV ONLY — change in prod
-                                .roles("USER")
-                                .build()
-                );
+                manager.createUser(User.withUsername("user1").password(passwordEncoder.encode("password1")) // DEV ONLY — change in prod
+                        .roles("USER").build());
             }
             if (!manager.userExists("admin")) {
-                manager.createUser(
-                        User.withUsername("admin")
-                                .password(passwordEncoder.encode("admin1")) // DEV ONLY — change in prod
-                                .roles("ADMIN")
-                                .build()
-                );
+                manager.createUser(User.withUsername("admin").password(passwordEncoder.encode("admin1")) // DEV ONLY — change in prod
+                        .roles("ADMIN").build());
             }
         };
     }
@@ -132,4 +111,6 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
+
+
 }
