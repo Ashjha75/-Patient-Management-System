@@ -19,43 +19,18 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * Spring Security filter that intercepts incoming HTTP requests to validate JWT tokens.
- * <p>
- * This filter extends {@link OncePerRequestFilter} to ensure it runs exactly once per request.
- * It performs JWT-based authentication by extracting, validating, and processing JWT tokens
- * from either the Authorization header or cookies.
- * <p>
- * Main responsibilities:
- * <ul>
- *   <li>Intercept HTTP requests (OncePerRequestFilter)</li>
- *   <li>Extract JWT from Authorization header with fallback to cookies</li>
- *   <li>Validate JWT using JwtUtils</li>
- *   <li>Extract username from JWT</li>
- *   <li>Load UserDetails from database</li>
- *   <li>Create Authentication token (UsernamePasswordAuthenticationToken)</li>
- *   <li>Attach request details to authentication</li>
- *   <li>Set authentication in SecurityContext</li>
- *   <li>Handle invalid or missing token scenarios</li>
- *   <li>Continue with filter chain</li>
- * </ul>
- * <p>
- * If a valid JWT is found and successfully validated, the filter sets up the Spring Security
- * context with the authenticated user details. If no valid token is found or validation fails,
- * the request continues without authentication.
- *
- * @see OncePerRequestFilter
- * @see JwtUtils
- * @see org.springframework.security.core.context.SecurityContextHolder
- */
 @Component
 public class AuthTokenFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
+
     @Autowired
     private JwtUtils jwtUtils;
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService; // ADD THIS LINE
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -65,54 +40,57 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         try {
             String jwt = parseJwt(request);
 
-            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-                String username = jwtUtils.getUserNameFromJwtToken(jwt);
-                logger.debug("Valid JWT found for user: {}", username);
+            if (jwt != null) {
+                // FIRST: Check if token is blacklisted
+                if (tokenBlacklistService.isTokenBlacklisted(jwt)) {
+                    logger.warn("Blocked blacklisted JWT token for request: {}", requestURI);
+                    SecurityContextHolder.clearContext();
+                    filterChain.doFilter(request, response);
+                    return; // Stop processing and continue to next filter
+                }
 
-                // Load user details from database
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                // SECOND: Validate token only if not blacklisted
+                if (jwtUtils.validateJwtToken(jwt)) {
+                    String username = jwtUtils.getUserNameFromJwtToken(jwt);
+                    logger.debug("Valid JWT found for user: {}", username);
 
-                // Create authentication token
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-                // Set additional request details
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                // Set authentication in security context
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                logger.debug("User authenticated successfully with roles: {}", userDetails.getAuthorities());
-
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    logger.debug("User authenticated successfully with roles: {}", userDetails.getAuthorities());
+                } else {
+                    logger.debug("Invalid JWT token found for request: {}", requestURI);
+                }
             } else {
-                logger.debug("No valid JWT token found for request: {}", requestURI);
+                logger.debug("No JWT token found for request: {}", requestURI);
             }
 
         } catch (UsernameNotFoundException ex) {
             logger.warn("User not found during JWT authentication: {}", ex.getMessage());
-            // Clear any partial authentication context
             SecurityContextHolder.clearContext();
-
         } catch (Exception ex) {
             logger.error("JWT authentication failed for request {}: {}", requestURI, ex.getMessage());
-            // Clear security context on any authentication error
             SecurityContextHolder.clearContext();
         }
+
+        // CRITICAL: Always continue the filter chain
+        filterChain.doFilter(request, response);
     }
 
     private String parseJwt(HttpServletRequest request) {
         if (request == null) {
             return null;
         }
-
         String jwt = jwtUtils.getJwtFromHeader(request);
-        logger.debug("JWT received: {}", jwt);
+        logger.debug("JWT received: {}", jwt != null ? "Present" : "Null");
         return jwt;
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-
-        // Skip JWT processing for permitted paths
         return path.startsWith("/api/auth/") ||
                 path.startsWith("/api/public/") ||
                 path.startsWith("/api/v1/docs") ||
@@ -124,5 +102,4 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 path.startsWith("/webjars") ||
                 path.equals("/favicon.ico");
     }
-
 }
