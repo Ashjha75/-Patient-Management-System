@@ -23,7 +23,8 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "user_id")
+    private Long userId;
 
     @NotBlank
     @Size(min = 3, max = 50)
@@ -40,12 +41,15 @@ public class User {
     @Size(max = 100)
     @Column(nullable = false, unique = true)
     private String email;
-
+    @Column(nullable = false)
+    private boolean enabled = true;
     // Roles (ADMIN, SUBADMIN, DOCTOR, PATIENT, etc.)
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"), // ✅ FK points to user_id
+            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "role_id")
+    )
     private Set<Role> roles = new HashSet<>();
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
