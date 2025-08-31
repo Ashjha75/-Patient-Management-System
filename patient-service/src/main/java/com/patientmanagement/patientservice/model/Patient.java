@@ -86,7 +86,9 @@ import java.time.LocalDateTime;
         private LocalDate registrationDate;
 
 
-
+        @OneToOne
+        @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
+        private User user;
 
         @CreationTimestamp
         @Column(updatable = false)
