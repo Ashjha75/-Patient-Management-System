@@ -1,70 +1,55 @@
-//package com.patientmanagement.patientservice.model;
-//
-//import jakarta.persistence.*;
-//import jakarta.validation.constraints.Email;
-//import jakarta.validation.constraints.NotBlank;
-//import jakarta.validation.constraints.Size;
-//import lombok.*;
-//
-//import java.util.ArrayList;
-//import java.util.HashSet;
-//import java.util.List;
-//import java.util.Set;
-//
-//@Entity
-//@Data
-//@NoArgsConstructor
-//@AllArgsConstructor
-//@Table(name = "users",
-//        uniqueConstraints = {
-//                @UniqueConstraint(columnNames = "username"),
-//                @UniqueConstraint(columnNames = "email")
-//        })
-//public class User {
-//    @Id
-//    @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-//    @Column(name = "user_id")
-//    private Long userId;
-//
-//    @NotBlank
-//    @Size(min = 3, max = 50)
-//    @Column(name = "username")
-//    private String username;
-//
-//    @NotBlank
-//    @Column(name = "password")
-//    @Size(min = 6, max = 100)
-//    private String password;
-//
-//    @NotBlank
-//    @Column(name = "email")
-//    @Size(min = 6, max = 100)
-//    @Email(message = "must be a well-formed email address")
-//    private String email;
-//    @Setter
-//    @Getter
-//    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
-//    @JoinTable(name = "user_roles",
-//            joinColumns = @JoinColumn(name = "user_id"),
-//            inverseJoinColumns = @JoinColumn(name = "role_id"))
-//    private Set<Role> roles = new HashSet<>();
-//    @Setter
-//    @Getter
-//    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER, orphanRemoval = true)
-////    @JoinTable(name = "user_address",
-////            joinColumns = @JoinColumn(name = "user_id"),
-////            inverseJoinColumns = @JoinColumn(name = "address_id"))
-////    private List<addressEntity> address = new ArrayList<>();
-////    @ToString.Exclude
-////    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
-////    private Set<productEntity> productEntities;
-////    @ToString.Exclude
-////    @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
-////    private cartEntity cart;
-////
-////    public User(String username, String email, String password) {
-////        this.username = username;
-////        this.password = password;
-////        this.email = email;
-////    }
-//}
+package com.patientmanagement.patientservice.model;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "username"),
+                @UniqueConstraint(columnNames = "email")
+        })
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank
+    @Size(min = 3, max = 50)
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @NotBlank
+    @Size(min = 6, max = 100)
+    @Column(nullable = false)
+    private String password;
+
+    @NotBlank
+    @Email
+    @Size(max = 100)
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    // Roles (ADMIN, SUBADMIN, DOCTOR, PATIENT, etc.)
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Patient patient;
+
+    // Similarly, add Doctor later
+}
