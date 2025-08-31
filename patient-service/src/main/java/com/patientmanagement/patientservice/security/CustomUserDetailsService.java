@@ -1,25 +1,67 @@
 package com.patientmanagement.patientservice.security;
 
+import com.patientmanagement.patientservice.repository.UserRepository;
+import com.patientmanagement.patientservice.model.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 
-import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
+
+    private static final Logger logger = LoggerFactory.getLogger(CustomUserDetailsService.class);
+
+    private final UserRepository userRepository;
+
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // For demonstration, return a dummy user. Replace with DB lookup in production.
-        if (username == null || username.isEmpty()) {
-            throw new UsernameNotFoundException("Username is empty");
+
+        if (!StringUtils.hasText(username)) {
+            logger.warn("Attempted to load user with empty or null username");
+            throw new UsernameNotFoundException("Username cannot be null or empty");
         }
-        // Password is 'password123' encoded with bcrypt for demo purposes
-        String encodedPassword = "$2a$10$Dow1QwQwQwQwQwQwQwQwQeQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQw";
-        return new User(username, encodedPassword, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+
+        String trimmedUsername = username.trim();
+        logger.debug("Loading user details for username: {}", trimmedUsername);
+
+        User user = userRepository.findByUsername(trimmedUsername)
+                .orElseThrow(() -> {
+                    logger.warn("User not found with username: {}", trimmedUsername);
+                    return new UsernameNotFoundException("User not found with username: " + trimmedUsername);
+                });
+
+        logger.debug("Successfully loaded user: {} with {} roles",
+                user.getUsername(), user.getRoles().size());
+
+        // Convert roles to GrantedAuthority
+        List<GrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> (GrantedAuthority) new SimpleGrantedAuthority(role.getRoleName().name()))
+                .collect(Collectors.toList());
+
+        // Return Spring Security User
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                user.isEnabled(),
+                true,
+                true,
+                true,
+                authorities
+        );
     }
 }
-
