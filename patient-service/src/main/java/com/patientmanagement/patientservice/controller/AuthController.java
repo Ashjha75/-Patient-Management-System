@@ -3,12 +3,15 @@ package com.patientmanagement.patientservice.controller;
 import com.patientmanagement.patientservice.dto.PatientRequestDto;
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
+import com.patientmanagement.patientservice.security.AuthTokenFilter;
 import com.patientmanagement.patientservice.security.JwtUtils;
 import com.patientmanagement.patientservice.security.TokenBlacklistService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,6 +34,7 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication API", description = "Endpoints for user authentication and registration")
 public class AuthController {
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     // Constants for response messages
     private static final String MESSAGE_KEY = "message";
@@ -55,6 +59,7 @@ public class AuthController {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userRequest.getUsername(), userRequest.getPassword())
             );
+            logger.debug("Authentication Successful {}", authentication);
         } catch (AuthenticationException e) {
             Map<String, Object> map = new HashMap<>();
             map.put(MESSAGE_KEY, "Invalid username or password");
