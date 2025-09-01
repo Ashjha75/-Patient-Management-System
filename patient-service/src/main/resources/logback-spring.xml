@@ -1,0 +1,51 @@
+<configuration>
+    <!-- Include Spring Boot's default configurations -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Define a property for the logging directory -->
+    <property name="LOG_PATH" value="logs"/>
+
+    <!-- Appender for the Console (useful for local dev) -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern> <!-- Use Spring's default console pattern -->
+        </encoder>
+    </appender>
+
+    <!-- ====================================================== -->
+    <!--  THIS IS THE CRITICAL PRODUCTION APPENDER             -->
+    <!-- ====================================================== -->
+    <appender name="FILE_ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/application.log</file> <!-- The active log file -->
+
+        <!-- Define the Rolling Policy (HOW and WHEN to roll over) -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--
+              fileNamePattern: Where to move the old log files.
+              %d{yyyy-MM-dd}: Roll over daily.
+              .%i: An index for when files roll over due to size on the same day.
+            -->
+            <fileNamePattern>${LOG_PATH}/archived/application-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+
+            <!-- maxFileSize: Start a new log file when the active one reaches this size. -->
+            <maxFileSize>10MB</maxFileSize>
+
+            <!-- maxHistory: Keep archived log files for this many days. Older ones are deleted. -->
+            <maxHistory>30</maxHistory>
+
+            <!-- totalSizeCap: Enforce a total size limit for all archived logs. -->
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%d %p %c{1.} [%t] %m%n</pattern> <!-- A simple pattern for files -->
+        </encoder>
+    </appender>
+
+    <!-- Configure the Root Logger -->
+    <root level="info">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE_ROLLING"/>
+    </root>
+
+</configuration>

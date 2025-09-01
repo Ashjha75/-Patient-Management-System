@@ -2,12 +2,11 @@ package com.patientmanagement.patientservice.security;
 
 import com.patientmanagement.patientservice.repository.UserRepository;
 import com.patientmanagement.patientservice.model.User;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,9 +16,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private static final Logger logger = LoggerFactory.getLogger(CustomUserDetailsService.class);
 
     private final UserRepository userRepository;
 
@@ -32,20 +31,20 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         if (!StringUtils.hasText(username)) {
-            logger.warn("Attempted to load user with empty or null username");
+            log.warn("Attempted to load user with empty or null username");
             throw new UsernameNotFoundException("Username cannot be null or empty");
         }
 
         String trimmedUsername = username.trim();
-        logger.debug("Loading user details for username: {}", trimmedUsername);
+        log.debug("Loading user details for username: {}", trimmedUsername);
 
         User user = userRepository.findByUsername(trimmedUsername)
                 .orElseThrow(() -> {
-                    logger.warn("User not found with username: {}", trimmedUsername);
+                    log.warn("User not found with username: {}", trimmedUsername);
                     return new UsernameNotFoundException("User not found with username: " + trimmedUsername);
                 });
 
-        logger.debug("Successfully loaded user: {} with {} roles",
+        log.debug("Successfully loaded user: {} with {} roles",
                 user.getUsername(), user.getRoles().size());
 
         // Convert roles to GrantedAuthority
