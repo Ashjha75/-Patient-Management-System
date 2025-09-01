@@ -16,7 +16,7 @@
     <!--  THIS IS THE CRITICAL PRODUCTION APPENDER             -->
     <!-- ====================================================== -->
     <appender name="FILE_ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/application.log</file> <!-- The active log file -->
+        <file>${LOG_PATH}/application-test.log</file> <!-- The active log file -->
 
         <!-- Define the Rolling Policy (HOW and WHEN to roll over) -->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -38,7 +38,7 @@
         </rollingPolicy>
 
         <encoder>
-            <pattern>%d %p %c{1.} [%t] %m%n</pattern> <!-- A simple pattern for files -->
+            <pattern>%d %p %c{1} [%t] %m%n</pattern> <!-- A simple pattern for files -->
         </encoder>
     </appender>
 
