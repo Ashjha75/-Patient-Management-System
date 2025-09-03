@@ -79,27 +79,38 @@ public class PatientServiceImpl implements PatientService {
         return PatientMapper.toDTO(savedPatient);
     }
 
+    // Java
     @Override
-    public PatientResponseDTO updatePatient(String username, PatientRequestDto patientRequestDto) {
+    public PatientResponseDTO updatePatient(String username, PatientRequestDto dto) {
         Patient patient = patientRepository.findByUsername(username);
         if (patient == null) {
             throw new ResourceNotFound("Username", "id", username);
         }
 
-        // Update patient details with validation
-        if (patientRequestDto.getFirstName() != null && !patientRequestDto.getFirstName().trim().isEmpty()) {
-            patient.setFirstName(patientRequestDto.getFirstName().trim());
-        }
+        updateName(patient, dto);
+        updateEmail(patient, dto);
+        updateDateOfBirth(patient, dto);
+        updateGender(patient, dto);
+        updateAddress(patient, dto);
 
-        if (patientRequestDto.getLastName() != null && !patientRequestDto.getLastName().trim().isEmpty()) {
-            patient.setLastName(patientRequestDto.getLastName().trim());
-        }
+        Patient updatedPatient = patientRepository.save(patient);
+        return PatientMapper.toDTO(updatedPatient);
+    }
 
-        // Email validation and uniqueness check
-        if (patientRequestDto.getEmail() != null && !patientRequestDto.getEmail().trim().isEmpty()
-                && !patient.getEmail().equals(patientRequestDto.getEmail().trim())) {
-            String email = patientRequestDto.getEmail().trim();
-            if (IsValidEmail.isValidEmail(email) && !Objects.equals(patient.getEmail(), email.trim())) {
+    private void updateName(Patient patient, PatientRequestDto dto) {
+        if (dto.getFirstName() != null && !dto.getFirstName().trim().isEmpty()) {
+            patient.setFirstName(dto.getFirstName().trim());
+        }
+        if (dto.getLastName() != null && !dto.getLastName().trim().isEmpty()) {
+            patient.setLastName(dto.getLastName().trim());
+        }
+    }
+
+    private void updateEmail(Patient patient, PatientRequestDto dto) {
+        if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty()
+                && !patient.getEmail().equals(dto.getEmail().trim())) {
+            String email = dto.getEmail().trim();
+            if (!IsValidEmail.isValidEmail(email)) {
                 throw new ApiException("Invalid email format");
             }
             if (patientRepository.existsByEmail(email)) {
@@ -107,20 +118,22 @@ public class PatientServiceImpl implements PatientService {
             }
             patient.setEmail(email);
         }
+    }
 
-        // Date of birth validation
-        if (patientRequestDto.getDateOfBirth() != null) {
-            LocalDate dob = patientRequestDto.getDateOfBirth();
+    private void updateDateOfBirth(Patient patient, PatientRequestDto dto) {
+        if (dto.getDateOfBirth() != null) {
+            LocalDate dob = dto.getDateOfBirth();
             if (dob.isAfter(LocalDate.now())) {
                 throw new ApiException("Date of birth cannot be in the future");
             }
             patient.setDateOfBirth(dob);
         }
+    }
 
-        // Gender validation
-        if (patientRequestDto.getGender() != null && !patientRequestDto.getGender().trim().isEmpty()) {
+    private void updateGender(Patient patient, PatientRequestDto dto) {
+        if (dto.getGender() != null && !dto.getGender().trim().isEmpty()) {
             try {
-                patient.setGender(Gender.valueOf(patientRequestDto.getGender().trim().toUpperCase()));
+                patient.setGender(Gender.valueOf(dto.getGender().trim().toUpperCase()));
             } catch (IllegalArgumentException e) {
                 throw new ApiException("Invalid gender value. Allowed values: " +
                         String.join(", ", java.util.Arrays.stream(Gender.values())
@@ -128,35 +141,27 @@ public class PatientServiceImpl implements PatientService {
                                 .toArray(String[]::new)));
             }
         }
+    }
 
-        // Address validation
-        if (patientRequestDto.getAddressLine1() != null && !patientRequestDto.getAddressLine1().trim().isEmpty()) {
-            patient.setAddressLine1(patientRequestDto.getAddressLine1().trim());
+    private void updateAddress(Patient patient, PatientRequestDto dto) {
+        if (dto.getAddressLine1() != null && !dto.getAddressLine1().trim().isEmpty()) {
+            patient.setAddressLine1(dto.getAddressLine1().trim());
         }
-
-        // AddressLine2 can be empty, so just check for null
-        if (patientRequestDto.getAddressLine2() != null) {
-            patient.setAddressLine2(patientRequestDto.getAddressLine2().trim());
+        if (dto.getAddressLine2() != null) {
+            patient.setAddressLine2(dto.getAddressLine2().trim());
         }
-
-        if (patientRequestDto.getCity() != null && !patientRequestDto.getCity().trim().isEmpty()) {
-            patient.setCity(patientRequestDto.getCity().trim());
+        if (dto.getCity() != null && !dto.getCity().trim().isEmpty()) {
+            patient.setCity(dto.getCity().trim());
         }
-
-        if (patientRequestDto.getState() != null && !patientRequestDto.getState().trim().isEmpty()) {
-            patient.setState(patientRequestDto.getState().trim());
+        if (dto.getState() != null && !dto.getState().trim().isEmpty()) {
+            patient.setState(dto.getState().trim());
         }
-
-        if (patientRequestDto.getCountry() != null && !patientRequestDto.getCountry().trim().isEmpty()) {
-            patient.setCountry(patientRequestDto.getCountry().trim());
+        if (dto.getCountry() != null && !dto.getCountry().trim().isEmpty()) {
+            patient.setCountry(dto.getCountry().trim());
         }
-
-        if (patientRequestDto.getPostalCode() != null && !patientRequestDto.getPostalCode().trim().isEmpty()) {
-            patient.setPostalCode(patientRequestDto.getPostalCode().trim());
+        if (dto.getPostalCode() != null && !dto.getPostalCode().trim().isEmpty()) {
+            patient.setPostalCode(dto.getPostalCode().trim());
         }
-
-        Patient updatedPatient = patientRepository.save(patient);
-        return PatientMapper.toDTO(updatedPatient);
     }
 
     @Override
