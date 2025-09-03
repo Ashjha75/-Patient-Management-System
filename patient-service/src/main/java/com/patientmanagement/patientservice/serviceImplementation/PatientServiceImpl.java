@@ -13,6 +13,7 @@ import com.patientmanagement.patientservice.model.Patient;
 import com.patientmanagement.patientservice.repository.PatientRepository;
 import com.patientmanagement.patientservice.service.PatientService;
 import com.patientmanagement.patientservice.util.IdGenerator;
+import com.patientmanagement.patientservice.util.IsValidEmail;
 import com.patientmanagement.patientservice.util.enums.Gender;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The type Patient service.
@@ -97,7 +99,7 @@ public class PatientServiceImpl implements PatientService {
         if (patientRequestDto.getEmail() != null && !patientRequestDto.getEmail().trim().isEmpty()
                 && !patient.getEmail().equals(patientRequestDto.getEmail().trim())) {
             String email = patientRequestDto.getEmail().trim();
-            if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+            if (IsValidEmail.isValidEmail(email) && !Objects.equals(patient.getEmail(), email.trim())) {
                 throw new ApiException("Invalid email format");
             }
             if (patientRepository.existsByEmail(email)) {
