@@ -99,7 +99,7 @@ class PatientServiceImplTest { // Renamed class for better clarity
         assertNotNull(result);
         assertEquals(1, result.getData().size());
         assertEquals(0, result.getPageInfo().getPageNumber());
-        assertEquals("John", result.getData().get(0).getFirstName());
+        assertEquals("John", result.getData().getFirst().getFirstName());
     }
 
     // --- Tests for addPatient ---
@@ -137,6 +137,7 @@ class PatientServiceImplTest { // Renamed class for better clarity
         verify(billingServiceGrpcClient, never()).createBillingAccount(any(), any(), any());
     }
 
+    
     @Test
     @DisplayName("Should Throw InvalidInputException When Email Exists")
     void addPatient_whenEmailExists_shouldThrowException() {
