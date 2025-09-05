@@ -1,9 +1,9 @@
 package com.patientmanagement.patientservice.serviceImplementation;
 
-import com.patientmanagement.patientservice.dto.PatientRequestDto;
-import com.patientmanagement.patientservice.dto.PatientResponseDTO;
 import com.patientmanagement.patientservice.dto.PageInfoDTO;
 import com.patientmanagement.patientservice.dto.PatientPageResponseDTO;
+import com.patientmanagement.patientservice.dto.PatientRequestDto;
+import com.patientmanagement.patientservice.dto.PatientResponseDTO;
 import com.patientmanagement.patientservice.exception.ApiException;
 import com.patientmanagement.patientservice.exception.InvalidInputException;
 import com.patientmanagement.patientservice.exception.ResourceNotFound;
@@ -15,6 +15,7 @@ import com.patientmanagement.patientservice.service.PatientService;
 import com.patientmanagement.patientservice.util.IdGenerator;
 import com.patientmanagement.patientservice.util.IsValidEmail;
 import com.patientmanagement.patientservice.util.enums.Gender;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,14 +29,10 @@ import java.util.List;
  * The type Patient service.
  */
 @Service
+@RequiredArgsConstructor
 public class PatientServiceImpl implements PatientService {
     private final PatientRepository patientRepository;
     private final BillingServiceGrpcClient billingServiceGrpcClient;
-
-    public PatientServiceImpl(PatientRepository patientRepository, BillingServiceGrpcClient billingServiceGrpcClient) {
-        this.patientRepository = patientRepository;
-        this.billingServiceGrpcClient = billingServiceGrpcClient;
-    }
 
     @Override
     public PatientPageResponseDTO getAllPatients(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {

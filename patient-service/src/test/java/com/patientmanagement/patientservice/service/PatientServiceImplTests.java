@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class) // Enables Mockito to work with JUnit 5
-class PatientServiceImplTest { // Renamed class for better clarity
+class PatientServiceImplTest {
 
     // --- 1. Consolidated Field Declarations ---
     // All mocks and the service instance are declared here, once.
@@ -43,6 +43,8 @@ class PatientServiceImplTest { // Renamed class for better clarity
 
     @InjectMocks
     private PatientServiceImpl patientService;
+//    eg
+//    patientService = new patientService(patientRepository, billingServiceGrpcClient)
 
     // All test data objects are declared here.
     private Patient patientForGet;
@@ -137,7 +139,7 @@ class PatientServiceImplTest { // Renamed class for better clarity
         verify(billingServiceGrpcClient, never()).createBillingAccount(any(), any(), any());
     }
 
-    
+
     @Test
     @DisplayName("Should Throw InvalidInputException When Email Exists")
     void addPatient_whenEmailExists_shouldThrowException() {
