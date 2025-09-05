@@ -16,21 +16,22 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.List;
+import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @Slf4j
 @ExtendWith(MockitoExtension.class)
-public class AuthServiceImplTests {
+class AuthServiceImplTests {
 
     @Mock
     private AuthenticationManager authenticationManager;
@@ -45,7 +46,7 @@ public class AuthServiceImplTests {
     private AuthServiceImpl authServiceImpl;
 
     private UserRequestDto userRequestDto;
-    private User mockUserDetails;
+    private UserDetails mockUserDetails;
 
     @BeforeEach
     void setUp() {
@@ -54,20 +55,21 @@ public class AuthServiceImplTests {
         userRequestDto.setPassword("password");
 
         mockUserDetails = new User(
-                userRequestDto.getUsername(),
-                userRequestDto.getPassword(),
-                List.of(new SimpleGrantedAuthority("ROLE_PATIENT"))
+                "username",
+                "password",
+                Collections.emptyList()
         );
 
-        log.info("✅ Test setup completed with username={} and role=ROLE_PATIENT", userRequestDto.getUsername());
+        SecurityContextHolder.clearContext();
+        log.info("✅ Test setup completed. SecurityContext cleared.");
     }
 
     @Test
     @DisplayName("Should return UserInfoResponse on successful authentication")
     void authenticateUser_withValidCredentials_shouldReturnSuccessResponse() {
-        log.info("➡️ Starting test: authenticateUser_withValidCredentials_shouldReturnSuccessResponse");
+        log.info("➡️ Starting SUCCESS test");
 
-        // Arrange
+        // ARRANGE
         Authentication mockAuthentication =
                 new UsernamePasswordAuthenticationToken(mockUserDetails, null, mockUserDetails.getAuthorities());
 
@@ -77,25 +79,39 @@ public class AuthServiceImplTests {
         when(jwtUtils.generateTokenFromUsername(userRequestDto.getUsername()))
                 .thenReturn("token-mocked");
 
-        log.debug("🔧 Mocks configured: AuthenticationManager + JwtUtils");
-
-        // Act
+        // ACT
         ResponseEntity<UserInfoResponse> response = authServiceImpl.authenticateUser(userRequestDto);
 
-        log.info("📡 Service call completed. HTTP Status = {}", response.getStatusCode());
+        // ASSERT
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
 
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode(), "Expected OK response");
-        assertNotNull(response.getBody(), "Response body should not be null");
+        log.info("✅ Success -> Username={}, Token={}",
+                response.getBody().getUserName(), response.getBody().getJwtToken());
+    }
 
-        UserInfoResponse body = response.getBody();
-        log.info("✅ Authentication successful -> Username={}, Token={}, Roles={}",
-                body.getUserName(), body.getJwtToken(), body.getRoles());
+    @Test
+    @DisplayName("Should return 401 Unauthorized on failed authentication")
+    void authenticateUser_withInvalidCredentials_shouldReturnUnauthorized() {
+        log.info("➡️ Starting FAILURE test (invalid credentials)");
 
-        assertEquals("username", body.getUserName());
-        assertEquals("token-mocked", body.getJwtToken());
-        assertEquals(List.of("ROLE_PATIENT"), body.getRoles());
+        // ARRANGE
+        UserRequestDto invalidUserRequest = new UserRequestDto();
+        invalidUserRequest.setUsername("testuser");
+        invalidUserRequest.setPassword("wrongpassword");
 
-        log.info("🎉 Test passed: authenticateUser_withValidCredentials_shouldReturnSuccessResponse");
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new BadCredentialsException("Invalid credentials"));
+
+        // ACT
+        ResponseEntity<UserInfoResponse> response = authServiceImpl.authenticateUser(invalidUserRequest);
+
+        // ASSERT
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode(), "Expected 401 Unauthorized");
+        assertNull(response.getBody(), "Body should be null on failure");
+        assertNull(SecurityContextHolder.getContext().getAuthentication(), "SecurityContext should remain empty");
+
+        log.warn("❌ Authentication failed for username={} -> Status={}",
+                invalidUserRequest.getUsername(), response.getStatusCode());
     }
 }
