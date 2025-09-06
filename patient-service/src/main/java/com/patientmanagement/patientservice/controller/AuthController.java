@@ -2,13 +2,17 @@ package com.patientmanagement.patientservice.controller;
 
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
+import com.patientmanagement.patientservice.dto.validators.LoginValidationGroup;
+import com.patientmanagement.patientservice.dto.validators.RegistrationValidationGroup;
 import com.patientmanagement.patientservice.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,14 +38,14 @@ public class AuthController {
                     @ApiResponse(responseCode = "500", description = "Signup failed failed")
             }
     )
-    public ResponseEntity<String> registerUser(@RequestBody UserRequestDto userRequest) {
+    public ResponseEntity<String> registerUser(@Validated(RegistrationValidationGroup.class) @RequestBody UserRequestDto userRequest) {
         return authService.registerUser(userRequest);
     }
 
 
     @PostMapping("/signin")
     @Operation(summary = "Authenticate user", description = "Authenticate user and return JWT token")
-    public ResponseEntity<UserInfoResponse> authenticateUser(@RequestBody UserRequestDto userRequest) {
+    public ResponseEntity<UserInfoResponse> authenticateUser(@Validated(LoginValidationGroup.class) @RequestBody @Valid UserRequestDto userRequest) {
         return authService.authenticateUser(userRequest);
     }
 

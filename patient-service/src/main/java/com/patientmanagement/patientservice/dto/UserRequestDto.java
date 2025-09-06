@@ -1,6 +1,7 @@
 package com.patientmanagement.patientservice.dto;
 
 
+import com.patientmanagement.patientservice.dto.validators.RegistrationValidationGroup;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -16,7 +17,7 @@ public class UserRequestDto {
     @Schema(defaultValue = "user1")
     private String username;
 
-    @NotBlank(message = "Email is required")
+    @NotBlank(message = "Email is required", groups = {RegistrationValidationGroup.class})
     @Email(message = "Provide valid email")
     @Schema(defaultValue = "user1@gmail.com")
     private String email;

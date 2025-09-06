@@ -43,8 +43,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResponseEntity<String> registerUser(UserRequestDto userRequestDto) {
-        if (userRequestDto.getUsername() == null || userRequestDto.getUsername().isBlank() ||
-                userRequestDto.getPassword() == null || userRequestDto.getPassword().isBlank()) {
+        if (userRequestDto.getUsername() == null || userRequestDto.getUsername().isBlank() || userRequestDto.getPassword() == null || userRequestDto.getPassword().isBlank()) {
             return ResponseEntity.badRequest().body("Username and password must not be empty.");
         }
 
@@ -53,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists.");
         }
 
-        userRepository.save(new User(userRequestDto.getUsername(), passwordEncoder.encode(userRequestDto.getPassword(), userRequestDto.getEmail())));
+        userRepository.save(new User(userRequestDto.getUsername(), passwordEncoder.encode(userRequestDto.getPassword()), userRequestDto.getEmail()));
 
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully.");
     }
@@ -62,9 +61,7 @@ public class AuthServiceImpl implements AuthService {
     public ResponseEntity<UserInfoResponse> authenticateUser(UserRequestDto userRequest) {
         Authentication authentication;
         try {
-            authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(userRequest.getUsername(), userRequest.getPassword())
-            );
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequest.getUsername(), userRequest.getPassword()));
             log.debug("Authentication Successful {}", authentication);
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -75,9 +72,7 @@ public class AuthServiceImpl implements AuthService {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String jwtToken = jwtUtils.generateTokenFromUsername(userDetails.getUsername());
 
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(auth -> auth.getAuthority())
-                .toList();
+        List<String> roles = userDetails.getAuthorities().stream().map(auth -> auth.getAuthority()).toList();
 
         UserInfoResponse response = new UserInfoResponse(jwtToken, userDetails.getUsername(), roles);
         return ResponseEntity.ok(response);
