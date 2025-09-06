@@ -16,6 +16,36 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * JWT Authentication Entry Point for handling unauthorized access attempts.
+ *
+ * <p>This component intercepts authentication failures and returns standardized
+ * JSON error responses instead of default Spring Security error pages.
+ *
+ * <h3>Main Steps:</h3>
+ * <ol>
+ *   <li><strong>Logs unauthorized access</strong> - Records the request URI for security monitoring</li>
+ *   <li><strong>Sets response headers</strong> - Configures JSON content type and 401 status</li>
+ *   <li><strong>Creates error response body</strong> - Builds standardized JSON with status, error, message, path, and timestamp</li>
+ *   <li><strong>Writes JSON response</strong> - Serializes error object to response stream</li>
+ * </ol>
+ *
+ * <h3>Key Features:</h3>
+ * <ul>
+ *   <li>Returns consistent JSON format for all authentication failures</li>
+ *   <li>Prevents exposure of internal security details</li>
+ *   <li>Provides client-friendly error messages</li>
+ *   <li>Includes request context (path, timestamp) for debugging</li>
+ * </ul>
+ *
+ * <p><strong>When triggered:</strong> Any request to protected endpoints without valid JWT token
+ * or expired/invalid authentication credentials.
+ *
+ * @see AuthenticationEntryPoint
+ * @see AuthenticationException
+ */
+
 @Component
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
@@ -28,7 +58,7 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
                          AuthenticationException authException) throws IOException, ServletException {
 
         String requestURI = request.getRequestURI();
-        logger.error("Unauthorized access attempt - URI: {}",requestURI );
+        logger.error("Unauthorized access attempt - URI: {}", requestURI);
 
         // Set response headers
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

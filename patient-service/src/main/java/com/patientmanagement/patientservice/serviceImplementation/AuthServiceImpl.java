@@ -2,6 +2,7 @@ package com.patientmanagement.patientservice.serviceImplementation;
 
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
+import com.patientmanagement.patientservice.exception.ResourceNotFound;
 import com.patientmanagement.patientservice.model.User;
 import com.patientmanagement.patientservice.repository.UserRepository;
 import com.patientmanagement.patientservice.security.JwtUtils;
@@ -65,7 +66,7 @@ public class AuthServiceImpl implements AuthService {
     public ResponseEntity<UserInfoResponse> authenticateUser(UserRequestDto userRequest) {
         if (!userRepository.existsByUsername(userRequest.getUsername())) {
             log.warn("Authentication failed - Username not found: {}", userRequest.getUsername());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new ResourceNotFound("User", "username", userRequest.getUsername());
         }
 
         Authentication authentication;
