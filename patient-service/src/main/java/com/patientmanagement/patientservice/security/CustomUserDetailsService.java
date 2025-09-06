@@ -1,33 +1,42 @@
 package com.patientmanagement.patientservice.security;
 
-import com.patientmanagement.patientservice.repository.UserRepository;
 import com.patientmanagement.patientservice.model.User;
+import com.patientmanagement.patientservice.repository.UserRepository;
+import jakarta.persistence.Cacheable;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+//Validates username input - Checks if username is not null/empty
+//Searches user in database - Uses userRepository.findByUsername()
+//Throws exception if user not found - UsernameNotFoundException
+//Converts user roles to authorities - Maps roles to GrantedAuthority
+//Returns Spring Security UserDetails - Creates User object with credentials and authorities
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
 
     private final UserRepository userRepository;
 
-    public CustomUserDetailsService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
-    @Transactional(readOnly = true)
+    //    @CacheEvict(value = "userDetails", key = "#user.username")
+//  use evict to remove cache in update user when role and data changes to not provide satle info
     @Override
+    @Cacheable("userDetails")
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         if (!StringUtils.hasText(username)) {

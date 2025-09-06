@@ -63,12 +63,17 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResponseEntity<UserInfoResponse> authenticateUser(UserRequestDto userRequest) {
+        if (!userRepository.existsByUsername(userRequest.getUsername())) {
+            log.warn("Authentication failed - Username not found: {}", userRequest.getUsername());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequest.getUsername(), userRequest.getPassword()));
             log.debug("Authentication Successful {}", authentication);
         } catch (AuthenticationException e) {
-            log.error("Authentication failed.", e);
+            log.error("Authentication failed for user: {}", userRequest.getUsername(), e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
