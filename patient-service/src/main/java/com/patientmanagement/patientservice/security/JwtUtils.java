@@ -75,7 +75,7 @@ public class JwtUtils {
         Date issuedDate = new Date();
         Date expirationDate = new Date(issuedDate.getTime() + Long.parseLong(expirationTimeMS));
 
-        return Jwts.builder().subject(username.trim()).issuedAt(issuedDate).expiration(expirationDate).signWith(secureKey()).compact();
+        return Jwts.builder().subject(username.trim()).claim("roles", "Admin").issuedAt(issuedDate).expiration(expirationDate).signWith(secureKey()).compact();
     }
 
 
