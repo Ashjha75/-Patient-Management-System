@@ -51,6 +51,10 @@ public class AuthServiceImpl implements AuthService {
         if (userExists) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists.");
         }
+        boolean emailExists = userRepository.existsByEmail(userRequestDto.getEmail());
+        if (emailExists) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already exists.");
+        }
 
         userRepository.save(new User(userRequestDto.getUsername(), passwordEncoder.encode(userRequestDto.getPassword()), userRequestDto.getEmail()));
 
