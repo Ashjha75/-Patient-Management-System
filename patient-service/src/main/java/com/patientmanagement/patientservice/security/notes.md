@@ -31,7 +31,9 @@ Use it to hash passwords before storing them in your database; **never store pla
 - **Use Cases** → Authentication, authorization, and secure information exchange.
 
 ---
+
 # `Files 📂`
+
 # Security Components
 
 ## JwtUtils
@@ -41,6 +43,7 @@ Use it to hash passwords before storing them in your database; **never store pla
     - Token generation
     - Token validation
     - Extracting the username from the token
+
 # JwtUtils – Main Responsibilities
 
 - **Extract JWT from Header**
@@ -53,10 +56,12 @@ Use it to hash passwords before storing them in your database; **never store pla
 - **Validate JWT with Error Handling**
 
 ---
+
 ## AuthTokenFilter
 
 - Filters incoming requests to check for a valid JWT in the header.
-- Extracts the JWT from the request header, validates it, and configures the Spring Security context with user details if the token is valid.
+- Extracts the JWT from the request header, validates it, and configures the Spring Security context with user details
+  if the token is valid.
 
 # AuthTokenFilter – Main Responsibilities
 
@@ -79,7 +84,7 @@ Use it to hash passwords before storing them in your database; **never store pla
 - When an unauthorized request is detected, it:
     - Logs the error
     - Returns a JSON response with an error message, status code, and attempted path
-  
+
 # AuthEntryPointJwt – Main Responsibilities
 
 - **Intercept Unauthorized Access Attempts**
@@ -91,11 +96,13 @@ Use it to hash passwords before storing them in your database; **never store pla
 - **Write Standardized JSON Error Response to Client**
 
 ---
+
 ## SecurityConfig
 
 - Configures Spring Security filters and rules for the application.
 - Sets up the security filter chain, permitting or denying access based on paths and roles.
 - Configures session management to **stateless**, which is crucial for JWT usage.
+
 # WebSecurityConfig – Main Responsibilities
 
 - **Define JWT Authentication Filter Bean**
@@ -104,12 +111,18 @@ Use it to hash passwords before storing them in your database; **never store pla
 - **Expose AuthenticationManager Bean**
 - **Configure CORS Policy**
 - **Main SecurityFilterChain Setup**
-  - CSRF Disabled
-  - CORS Enabled
-  - Stateless Session Management
-  - Exception Handling with AuthEntryPointJwt
-  - URL-based Authorization Rules
-  - Security Headers (HSTS, CSP, Frame Options)
-  - Register Custom Authentication Provider
-  - Insert AuthTokenFilter Before UsernamePasswordAuthenticationFilter
+    - CSRF Disabled
+    - CORS Enabled
+    - Stateless Session Management
+    - Exception Handling with AuthEntryPointJwt
+    - URL-based Authorization Rules
+    - Security Headers (HSTS, CSP, Frame Options)
+    - Register Custom Authentication Provider
+    - Insert AuthTokenFilter Before UsernamePasswordAuthenticationFilter
 - **Define WebSecurityCustomizer (Ignore Swagger/Static Paths)**
+
+login
+logout - blacklisting
+signup
+refresh-token
+rbac

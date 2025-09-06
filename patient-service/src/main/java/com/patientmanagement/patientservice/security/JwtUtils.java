@@ -1,8 +1,7 @@
 package com.patientmanagement.patientservice.security;
 
 
-import java.nio.charset.StandardCharsets;
-
+import com.patientmanagement.patientservice.exception.ApiException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -76,7 +75,7 @@ public class JwtUtils {
         Date issuedDate = new Date();
         Date expirationDate = new Date(issuedDate.getTime() + Long.parseLong(expirationTimeMS));
 
-        return Jwts.builder().subject(username.trim()).issuedAt(issuedDate).expiration(expirationDate).signWith(Key()).compact();
+        return Jwts.builder().subject(username.trim()).issuedAt(issuedDate).expiration(expirationDate).signWith(secureKey()).compact();
     }
 
 
@@ -87,13 +86,12 @@ public class JwtUtils {
         }
 
         try {
-            Claims claims = Jwts.parser().verifyWith((SecretKey) Key()).build().parseSignedClaims(token.trim()).getPayload();
+            Claims claims = Jwts.parser().verifyWith((SecretKey) secureKey()).build().parseSignedClaims(token.trim()).getPayload();
 
             return claims.getSubject();
 
         } catch (Exception e) {
-            logger.error("Failed to extract username from JWT: {}", e.getMessage());
-            throw new RuntimeException("Invalid JWT token", e);
+            throw new ApiException("Invalid JWT token");
         }
     }
 
@@ -106,7 +104,7 @@ public class JwtUtils {
         }
 
         try {
-            Jwts.parser().verifyWith((SecretKey) Key()).build().parseSignedClaims(token.trim());
+            Jwts.parser().verifyWith((SecretKey) secureKey()).build().parseSignedClaims(token.trim());
             logger.debug("JWT token validation successful");
             return true;
 
@@ -142,7 +140,7 @@ public class JwtUtils {
 
         try {
             Claims claims = Jwts.parser()
-                    .verifyWith((SecretKey) Key())
+                    .verifyWith((SecretKey) secureKey())
                     .build()
                     .parseSignedClaims(token.trim())
                     .getPayload();
@@ -162,7 +160,7 @@ public class JwtUtils {
     }
 
     /*HELPER METHOD __*/
-    private Key Key() {
+    private Key secureKey() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 }

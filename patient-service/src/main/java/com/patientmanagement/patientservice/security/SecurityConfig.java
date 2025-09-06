@@ -1,10 +1,11 @@
 package com.patientmanagement.patientservice.security;
 
 import com.patientmanagement.patientservice.model.Role;
-import com.patientmanagement.patientservice.model.User; // ✅ IMPORTANT: Import your custom User entity
+import com.patientmanagement.patientservice.model.User;
 import com.patientmanagement.patientservice.repository.RoleRepository;
 import com.patientmanagement.patientservice.repository.UserRepository;
 import com.patientmanagement.patientservice.util.enums.AppRoles;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,19 +33,11 @@ import java.util.Set;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final AuthEntryPointJwt unauthorizedHandler;
-    // ✅ Renamed fields to follow Java conventions
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
 
-    // ✅ Renamed parameters to match fields
-    public SecurityConfig(AuthEntryPointJwt unauthorizedHandler, UserRepository userRepository, RoleRepository roleRepository) {
-        this.unauthorizedHandler = unauthorizedHandler;
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-    }
 
     @Bean
     public AuthTokenFilter authenticationTokenFilterBean() {
@@ -82,7 +75,6 @@ public class SecurityConfig {
         return source;
     }
 
-    // ✅ REMOVED the conflicting JdbcUserDetailsManager bean
 
     @Bean
     CommandLineRunner init(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
