@@ -2,12 +2,15 @@ package com.patientmanagement.patientservice.serviceImplementation;
 
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
+import com.patientmanagement.patientservice.model.User;
+import com.patientmanagement.patientservice.repository.UserRepository;
 import com.patientmanagement.patientservice.security.JwtUtils;
 import com.patientmanagement.patientservice.security.TokenBlacklistService;
 import com.patientmanagement.patientservice.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +19,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -35,6 +40,30 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final TokenBlacklistService tokenBlacklistService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Override
+    public ResponseEntity<String> registerUser(UserRequestDto userRequestDto) {
+        if (userRequestDto.getUsername() == null || userRequestDto.getUsername().isBlank() ||
+                userRequestDto.getPassword() == null || userRequestDto.getPassword().isBlank()) {
+            return ResponseEntity.badRequest().body("Username and password must not be empty.");
+        }
+
+        boolean userExists = userRepository.existsByUsername(userRequestDto.getUsername());
+        if (userExists) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists.");
+        }
+
+        userRepository.save(new User(userRequestDto.getUsername(), passwordEncoder.encode(userRequestDto.getPassword())));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully.");
+    }
 
     @Override
     public ResponseEntity<UserInfoResponse> authenticateUser(UserRequestDto userRequest) {
@@ -92,4 +121,6 @@ public class AuthServiceImpl implements AuthService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+
 }

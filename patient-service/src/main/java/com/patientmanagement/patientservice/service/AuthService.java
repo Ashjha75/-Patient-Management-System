@@ -10,5 +10,7 @@ import java.util.Map;
 public interface AuthService {
     ResponseEntity<UserInfoResponse> authenticateUser(UserRequestDto userRequest);
 
+    ResponseEntity<String> registerUser(UserRequestDto userRequest);
+
     ResponseEntity<Map<String, Object>> logout(HttpServletRequest request);
 }

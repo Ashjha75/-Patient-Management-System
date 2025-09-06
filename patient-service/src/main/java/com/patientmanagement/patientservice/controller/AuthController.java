@@ -24,6 +24,21 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @PostMapping("/signup")
+    @Operation(
+            summary = "Signup user",
+            description = "Register user and return user with valid",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "User Registered  successfully"),
+                    @ApiResponse(responseCode = "400", description = "Please provide correct details"),
+                    @ApiResponse(responseCode = "500", description = "Signup failed failed")
+            }
+    )
+    public ResponseEntity<String> registerUser(@RequestBody UserRequestDto userRequest) {
+        return authService.registerUser(userRequest);
+    }
+
+
     @PostMapping("/signin")
     @Operation(summary = "Authenticate user", description = "Authenticate user and return JWT token")
     public ResponseEntity<UserInfoResponse> authenticateUser(@RequestBody UserRequestDto userRequest) {
