@@ -15,7 +15,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.time.LocalDateTime;
@@ -114,6 +113,7 @@ public class GlobalExceptionHandler {
         log.warn("API error: {}", ex.getMessage());
         return pd;
     }
+
     @ExceptionHandler(InvalidInputException.class)
     public ResponseEntity<ErrorResponse> handleInvalidInputException(MethodArgumentNotValidException ex, HttpServletRequest req) {
         Map<String, String> fieldErrors = ex.getBindingResult()
@@ -205,4 +205,6 @@ public class GlobalExceptionHandler {
         pd.setProperty("correlationId", MDC.get("correlationId"));
         return pd;
     }
+
+
 }

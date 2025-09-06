@@ -68,6 +68,7 @@ public class AuthServiceImpl implements AuthService {
             authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequest.getUsername(), userRequest.getPassword()));
             log.debug("Authentication Successful {}", authentication);
         } catch (AuthenticationException e) {
+            log.error("Authentication failed.", e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
