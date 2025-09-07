@@ -2,6 +2,7 @@ package com.patientmanagement.patientservice.security;
 
 import com.patientmanagement.patientservice.model.Role;
 import com.patientmanagement.patientservice.model.User;
+import com.patientmanagement.patientservice.repository.ModuleRepository;
 import com.patientmanagement.patientservice.repository.RolePermissionRepository;
 import com.patientmanagement.patientservice.repository.RoleRepository;
 import com.patientmanagement.patientservice.repository.UserRepository;
