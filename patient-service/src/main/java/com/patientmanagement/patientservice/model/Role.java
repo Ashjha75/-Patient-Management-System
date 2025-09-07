@@ -1,28 +1,27 @@
-package com.patientmanagement.patientservice.model;
+package com.yourproject.model;
 
-import com.patientmanagement.patientservice.util.enums.AppRoles;
+import com.patientmanagement.patientservice.model.RolePermission;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Set;
 
 @Entity
-@Table(name = "roles") // ✅ explicit table name
-@NoArgsConstructor
-@Data
+@Table(name = "roles")
+@Getter
+@Setter
 public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "role_id")
-    private Integer roleId;
+    private Integer id;
 
-    @Enumerated(EnumType.STRING) // ✅ stored as String in DB
-    @Column(length = 30, name = "role_name", nullable = false, unique = true)
-    @ToString.Exclude
-    private AppRoles roleName;
+    @Column(name = "role_name", nullable = false, unique = true)
+    private String name; // e.g., "Administrator", "Treasury Manager"
 
-    public Role(AppRoles roleName) {
-        this.roleName = roleName;
-    }
+    // One role can have many permission mappings
+    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private Set<RolePermission> permissions;
 }
