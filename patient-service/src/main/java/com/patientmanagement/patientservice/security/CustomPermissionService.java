@@ -27,8 +27,8 @@ public class CustomPermissionService {
     private static final Logger log = LoggerFactory.getLogger(CustomPermissionService.class);
     private static final String SUPER_ADMIN_ROLE = "SUPER_ADMIN"; // Define the super admin role name
 
+    private final UserRepository userRepository;
 
-    private UserRepository userRepository;
 
     /**
      * Checks if the authenticated user has a specific permission for a given module.

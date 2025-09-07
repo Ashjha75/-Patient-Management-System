@@ -25,11 +25,23 @@ public class PatientController {
         this.patientService = patientService;
     }
 
-//    @permissionService: The @ symbol tells Spring to look for a bean with the name "permissionService" in its context. This is the CustomPermissionService we created.
-//            .hasPermission(...): This calls our custom method inside that service.service
+    /**
+     * <b>Security Rule:</b> This endpoint is protected by a dynamic permission check using the
+     * {@code @PreAuthorize} annotation. The expression must evaluate to true for access.
+     * <p>
+     * Expression Breakdown:
+     * {@code "@permissionService.hasPermission(authentication, 'PATIENT_MANAGEMENT', 'LIST') and @permissionService.hasPermission(authentication, 'PATIENT_MANAGEMENT', 'VIEW')"}
+     * <ul>
+     * <li><b>{@code @permissionService}</b>: Calls our custom security bean to check permissions.</li>
+     * <li><b>{@code authentication}</b>: The security context of the currently logged-in user.</li>
+     * <li><b>{@code 'PATIENT_MANAGEMENT'}</b>: The specific module key being checked against.</li>
+     * <li><b>{@code 'LIST'} and {@code 'VIEW'}</b>: The specific permissions required. The 'and' operator ensures the user must have both.</li>
+     * </ul>
+     * Access is granted only if the user's role has both permissions for the specified module.
+     */
 
+    @PreAuthorize("@permissionService.hasPermission(authentication, 'PATIENT_MANAGEMENT', 'LIST') and @permissionService.hasPermission(authentication, 'PATIENT_MANAGEMENT', 'VIEW')")
     @GetMapping("/all-patients")
-    @PreAuthorize("@permissionService.hasPermission(authentication, 'PATIENT_MANAGEMENT', 'LIST')")
     public ResponseEntity<PatientPageResponseDTO> getAllPatients(
             @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
