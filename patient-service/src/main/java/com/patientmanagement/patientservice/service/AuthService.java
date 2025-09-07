@@ -13,4 +13,6 @@ public interface AuthService {
     ResponseEntity<String> registerUser(UserRequestDto userRequest);
 
     ResponseEntity<Map<String, Object>> logout(HttpServletRequest request);
+
+    ResponseEntity<String> completeProfile(UserRequestDto userRequest);
 }

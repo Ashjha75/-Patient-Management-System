@@ -35,7 +35,7 @@ public class AuthController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "User Registered  successfully"),
                     @ApiResponse(responseCode = "400", description = "Please provide correct details"),
-                    @ApiResponse(responseCode = "500", description = "Signup failed failed")
+                    @ApiResponse(responseCode = "500", description = "Internal Server Error")
             }
     )
     public ResponseEntity<String> registerUser(@Validated(RegistrationValidationGroup.class) @RequestBody UserRequestDto userRequest) {
@@ -61,5 +61,20 @@ public class AuthController {
     )
     public ResponseEntity<Map<String, Object>> logout(HttpServletRequest request) {
         return authService.logout(request);
+    }
+
+
+    @PostMapping("/user-profile")
+    @Operation(
+            summary = "User Profile",
+            description = "Update profile of existing user",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "User Profile Updated  successfully"),
+                    @ApiResponse(responseCode = "400", description = "Please provide correct details"),
+                    @ApiResponse(responseCode = "500", description = "Internal Server Error ")
+            }
+    )
+    public ResponseEntity<String> completeProfile(@Validated(RegistrationValidationGroup.class) @RequestBody UserRequestDto userRequest) {
+        return authService.completeProfile(userRequest);
     }
 }
