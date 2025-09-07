@@ -1,6 +1,5 @@
-package com.yourproject.model;
+package com.patientmanagement.patientservice.model;
 
-import com.patientmanagement.patientservice.model.RolePermission;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +18,7 @@ public class Role {
     private Integer id;
 
     @Column(name = "role_name", nullable = false, unique = true)
-    private String name; // e.g., "Administrator", "Treasury Manager"
+    private String roleName; // e.g., "Administrator", "Treasury Manager"
 
     // One role can have many permission mappings
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
