@@ -58,7 +58,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // Convert roles to GrantedAuthority
         List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> (GrantedAuthority) new SimpleGrantedAuthority(role.getRoleName().name()))
+                .map(role -> (GrantedAuthority) new SimpleGrantedAuthority(role.getRoleName()))
                 .collect(Collectors.toList());
 
         // Return Spring Security User
