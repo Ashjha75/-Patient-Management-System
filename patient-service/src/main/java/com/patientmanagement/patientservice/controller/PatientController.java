@@ -9,6 +9,7 @@ import com.patientmanagement.patientservice.service.PatientService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.groups.Default;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,11 @@ public class PatientController {
         this.patientService = patientService;
     }
 
+//    @permissionService: The @ symbol tells Spring to look for a bean with the name "permissionService" in its context. This is the CustomPermissionService we created.
+//            .hasPermission(...): This calls our custom method inside that service.service
+
     @GetMapping("/all-patients")
+    @PreAuthorize("@permissionService.hasPermission(authentication, 'PATIENT_MANAGEMENT', 'LIST')")
     public ResponseEntity<PatientPageResponseDTO> getAllPatients(
             @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
             @RequestParam(value = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
