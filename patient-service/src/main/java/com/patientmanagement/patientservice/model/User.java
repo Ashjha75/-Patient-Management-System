@@ -1,7 +1,6 @@
 package com.patientmanagement.patientservice.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -38,7 +37,6 @@ public class User {
     private String password;
 
     @NotBlank
-    @Email
     @Size(max = 100)
     @Column(nullable = false, unique = true)
     private String email;
@@ -59,7 +57,7 @@ public class User {
     // Similarly, add Doctor later
 
 
-    public User(String email, String password, String username) {
+    public User(String username, String password, String email) {
         this.email = email;
         this.password = password;
         this.username = username;

@@ -2,7 +2,7 @@ package com.patientmanagement.patientservice.serviceImplementation;
 
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
-import com.patientmanagement.patientservice.exception.ResourceNotFound;
+import com.patientmanagement.patientservice.exception.ApiException;
 import com.patientmanagement.patientservice.model.User;
 import com.patientmanagement.patientservice.repository.UserRepository;
 import com.patientmanagement.patientservice.security.JwtUtils;
@@ -17,15 +17,18 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +53,7 @@ public class AuthServiceImpl implements AuthService {
 
         boolean userExists = userRepository.existsByUsername(userRequestDto.getUsername());
         if (userExists) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists.");
+            throw new ApiException("Username Already Exist");
         }
         boolean emailExists = userRepository.existsByEmail(userRequestDto.getEmail());
         if (emailExists) {
@@ -64,17 +67,29 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResponseEntity<UserInfoResponse> authenticateUser(UserRequestDto userRequest) {
-        if (!userRepository.existsByUsername(userRequest.getUsername())) {
-            log.warn("Authentication failed - Username not found: {}", userRequest.getUsername());
-            throw new ResourceNotFound("User", "username", userRequest.getUsername());
+        String loginInput = userRequest.getUsername(); // username or email
+        if (!StringUtils.hasText(loginInput)) {
+            log.warn("Authentication failed - Username or email is blank");
+            throw new ApiException("Username or email is blank");
+        }
+
+        // Normalize: if email, resolve to username
+        String usernameToAuth = loginInput;
+        if (loginInput.contains("@")) {
+            Optional<User> userOpt = userRepository.findByEmail(loginInput);
+            if (userOpt.isEmpty()) {
+                log.warn("Authentication failed - Email not found: {}", loginInput);
+                throw new ApiException("Email not found");
+            }
+            usernameToAuth = userOpt.get().getUsername();
         }
 
         Authentication authentication;
         try {
-            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequest.getUsername(), userRequest.getPassword()));
-            log.debug("Authentication Successful {}", authentication);
+            authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(usernameToAuth, userRequest.getPassword()));
+            log.debug("Authentication successful for {}", usernameToAuth);
         } catch (AuthenticationException e) {
-            log.error("Authentication failed for user: {}", userRequest.getUsername(), e);
+            log.error("Authentication failed for input: {}", loginInput, e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -83,11 +98,12 @@ public class AuthServiceImpl implements AuthService {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String jwtToken = jwtUtils.generateTokenFromUsername(userDetails.getUsername());
 
-        List<String> roles = userDetails.getAuthorities().stream().map(auth -> auth.getAuthority()).toList();
+        List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
         UserInfoResponse response = new UserInfoResponse(jwtToken, userDetails.getUsername(), roles);
         return ResponseEntity.ok(response);
     }
+
 
     @Override
     public ResponseEntity<Map<String, Object>> logout(HttpServletRequest request) {
@@ -122,4 +138,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
+    @Override
+    public ResponseEntity<String> completeProfile(UserRequestDto userRequest) {
+        return null;
+    }
 }
