@@ -8,6 +8,7 @@ import com.patientmanagement.patientservice.repository.ModuleRepository;
 import com.patientmanagement.patientservice.repository.RolePermissionRepository;
 import com.patientmanagement.patientservice.repository.RoleRepository;
 import com.patientmanagement.patientservice.repository.UserRepository;
+import com.patientmanagement.patientservice.util.enums.Permission;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -28,7 +29,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.security.Permission;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
