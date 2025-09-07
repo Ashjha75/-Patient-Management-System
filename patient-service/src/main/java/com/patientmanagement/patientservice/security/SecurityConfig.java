@@ -1,6 +1,8 @@
 package com.patientmanagement.patientservice.security;
 
+import com.patientmanagement.patientservice.model.Module;
 import com.patientmanagement.patientservice.model.Role;
+import com.patientmanagement.patientservice.model.RolePermission;
 import com.patientmanagement.patientservice.model.User;
 import com.patientmanagement.patientservice.repository.ModuleRepository;
 import com.patientmanagement.patientservice.repository.RolePermissionRepository;
@@ -26,8 +28,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.security.Permission;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 
 @Configuration
@@ -139,9 +143,9 @@ public class SecurityConfig {
 
     // Helper method to create a role and assign its initial permissions
     private Role createRoleAndAssignPermissions(RoleRepository roleRepo, RolePermissionRepository permRepo, String roleName, Module module, Set<Permission> permissions) {
-        Role role = roleRepo.findByName(roleName).orElseGet(() -> {
+        Role role = roleRepo.findByRoleName(roleName).orElseGet(() -> {
             Role newRole = new Role();
-            newRole.setName(roleName);
+            newRole.setRoleName(roleName);
             return roleRepo.save(newRole);
         });
 
@@ -163,6 +167,7 @@ public class SecurityConfig {
         }
     }
 
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
