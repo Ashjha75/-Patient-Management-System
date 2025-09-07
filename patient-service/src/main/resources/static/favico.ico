@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" aria-label="AI gradient star">
+    <defs>
+        <!-- Shimmering multi-stop gradient (cycles hues for a subtle AI vibe) -->
+        <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
+            <stop offset="0%"   stop-color="#00DCFF">
+                <animate attributeName="stop-color" values="#00DCFF;#2563EB;#8B5CF6;#06B6D4;#00DCFF" dur="10s" repeatCount="indefinite"/>
+            </stop>
+            <stop offset="35%"  stop-color="#2a5bc5ff">
+                <animate attributeName="stop-color" values="#6193ffff;#8B5CF6;#06B6D4;#00DCFF;#2563EB" dur="10s" repeatCount="indefinite"/>
+            </stop>
+            <stop offset="65%"  stop-color="#8B5CF6">
+                <animate attributeName="stop-color" values="#8B5CF6;#06B6D4;#00DCFF;#2563EB;#8B5CF6" dur="10s" repeatCount="indefinite"/>
+            </stop>
+            <stop offset="100%" stop-color="#27dfffff">
+                <animate attributeName="stop-color" values="#f4e865ff;#00DCFF;#2563EB;#8B5CF6;#06B6D4" dur="10s" repeatCount="indefinite"/>
+            </stop>
+            <animate attributeName="x1" values="0%;100%;0%" dur="12s" repeatCount="indefinite"/>
+            <animate attributeName="y1" values="0%;0%;0%" dur="12s" repeatCount="indefinite"/>
+            <animate attributeName="x2" values="100%;0%;100%" dur="12s" repeatCount="indefinite"/>
+            <animate attributeName="y2" values="100%;100%;100%" dur="12s" repeatCount="indefinite"/>
+        </linearGradient>
+
+        <!-- Soft outer glow -->
+        <radialGradient id="aiGlow" cx="50%" cy="50%" r="60%">
+            <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.55"/>
+            <stop offset="65%" stop-color="#02f650ff" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#3de2ffff" stop-opacity="0"/>
+        </radialGradient>
+
+        <filter id="blurGlow">
+            <feGaussianBlur stdDeviation="3"/>
+        </filter>
+
+        <!-- Light/Dark strokes -->
+        <style>
+            .stroke {
+            stroke: rgba(0,0,0,0.15);
+            }
+            @media (prefers-color-scheme: dark) {
+            .stroke {
+            stroke: rgba(255,255,255,0.25);
+            }
+            }
+        </style>
+    </defs>
+
+    <!-- Glow backdrop (uses the main star silhouette) -->
+    <g filter="url(#blurGlow)" opacity="0.9">
+        <path d="M81 36 64 0 47 36l-1 2-9-10a6 6 0 0 0-9 9l10 10h-2L0 64l36 17h2L28 91a6 6 0 1 0 9 9l9-10 1 2 17 36 17-36v-2l9 10a6 6 0 1 0 9-9l-9-9 2-1 36-17-36-17-2-1 9-9a6 6 0 1 0-9-9l-9 10v-2Zm-17 2-2 5c-4 8-11 15-19 19l-5 2 5 2c8 4 15 11 19 19l2 5 2-5c4-8 11-15 19-19l5-2-5-2c-8-4-15-11-19-19l-2-5Z"
+              fill="url(#aiGlow)"/>
+    </g>
+
+    <!-- Main star body (gradient fill + subtle stroke) -->
+    <path d="M81 36 64 0 47 36l-1 2-9-10a6 6 0 0 0-9 9l10 10h-2L0 64l36 17h2L28 91a6 6 0 1 0 9 9l9-10 1 2 17 36 17-36v-2l9 10a6 6 0 1 0 9-9l-9-9 2-1 36-17-36-17-2-1 9-9a6 6 0 1 0-9-9l-9 10v-2Zm-17 2-2 5c-4 8-11 15-19 19l-5 2 5 2c8 4 15 11 19 19l2 5 2-5c4-8 11-15 19-19l5-2-5-2c-8-4-15-11-19-19l-2-5Z"
+          fill="url(#aiGradient)" class="stroke" stroke-width="1"/>
+
+    <!-- Corner sparkles (also gradient-filled) -->
+    <path d="M118 19a6 6 0 0 0-9-9l-3 3a6 6 0 1 0 9 9l3-3Zm-96 4c-2 2-6 2-9 0l-3-3a6 6 0 1 1 9-9l3 3c3 2 3 6 0 9Zm0 82c-2-2-6-2-9 0l-3 3a6 6 0 1 0 9 9l3-3c3-2 3-6 0-9Zm96 4a6 6 0 0 1-9 9l-3-3a6 6 0 1 1 9-9l3 3Z"
+          fill="url(#aiGradient)"/>
+</svg>

@@ -1,5 +1,6 @@
 package com.patientmanagement.patientservice.security;
 
+import com.patientmanagement.patientservice.exception.ApiException;
 import com.patientmanagement.patientservice.model.Module;
 import com.patientmanagement.patientservice.model.Role;
 import com.patientmanagement.patientservice.model.RolePermission;
@@ -58,11 +59,17 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**", "/api/public/**", "/api/v1/docs/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/api/v1/swagger-ui/**", "/api/v1/swagger-ui.html", "/api/v1/swagger-resources/**", "/webjars/**").permitAll()
                         .requestMatchers("/health", "/favicon.ico").permitAll()
+                        .requestMatchers("/api/v1/login", "/api/v1/login/", "/oauth2/**", "/login/oauth2/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 
         http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
+        http.oauth2Login(oauth -> oauth.failureHandler(
+                (request, response, exception) -> {
+                    throw new ApiException("oAuth login failed");
+                }
+        ));
         return http.build();
     }
 
