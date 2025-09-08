@@ -9,7 +9,6 @@ import com.patientmanagement.patientservice.security.JwtUtils;
 import com.patientmanagement.patientservice.security.Oauth2utils;
 import com.patientmanagement.patientservice.security.TokenBlacklistService;
 import com.patientmanagement.patientservice.service.AuthService;
-import com.patientmanagement.patientservice.util.enums.AuthProviderType;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -147,63 +145,4 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
-    @Override
-    public ResponseEntity<UserInfoResponse> handleOauth2loginRequest(OAuth2User oAuth2User, String registrationId) {
-        // 1. Determine provider type & ID
-        AuthProviderType providerType = oauth2utils.getOauthProvider(registrationId);
-        String providerId = oauth2utils.determineProviderIdFromOauth2user(oAuth2User, registrationId);
-
-        // 2. Try to find existing user by providerId + providerType
-        User user = userRepository.findByProviderIdAndProviderType(providerId, providerType).orElse(null);
-
-        // 3. Fetch email from OAuth2 user
-        String email = oAuth2User.getAttribute("email");
-        User userByEmail = (email != null) ? userRepository.findByEmail(email).orElse(null) : null;
-
-        // 4. Handle new user signup
-        if (user == null && userByEmail == null) {
-            String username = oauth2utils.determineUsernameFromOauth2user(oAuth2User, registrationId, providerId);
-            user = registerNewOauth2User(username, email, providerId, providerType);
-        }
-        // 5. Existing provider user → update email if needed
-        else if (user != null) {
-            if (email != null && !email.isBlank() && !email.equals(user.getEmail())) {
-                user.setEmail(email);
-                userRepository.save(user);
-            }
-        }
-        // 6. Email conflict
-        else {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(new UserInfoResponse(null, null, email, "Username or email already exists"));
-        }
-
-        // ✅ Build response with proper fields
-        UserInfoResponse response = new UserInfoResponse(
-                String.valueOf(user.getUsername()),  // id as String (or change DTO type to Long)
-                user.getUsername(),
-                user.getEmail(),
-                providerType.name()
-        );
-
-        return ResponseEntity.ok(response);
-    }
-
-
-    private User registerNewOauth2User(String username, String email, String providerId, AuthProviderType providerType) {
-        if (username == null || username.isBlank()) {
-            throw new IllegalArgumentException("Username must not be empty");
-        }
-        if (userRepository.existsByUsername(username)) {
-            throw new ApiException("Username already exists");
-        }
-        if (email != null && userRepository.existsByEmail(email)) {
-            throw new ApiException("Email already exists");
-        }
-
-        User newUser = new User(username, null, email); // password null for OAuth2
-        newUser.setProviderId(providerId);
-        newUser.setProviderType(providerType);
-        return userRepository.save(newUser);
-    }
 }

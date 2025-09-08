@@ -2,7 +2,7 @@ package com.patientmanagement.patientservice.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
-import com.patientmanagement.patientservice.service.AuthService;
+import com.patientmanagement.patientservice.service.OAuth2UserProcessingService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -24,7 +23,7 @@ import java.io.IOException;
 public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final OAuth2AuthorizedClientService authorizedClientService;
-    private final AuthService authService;
+    private final OAuth2UserProcessingService oAuth2UserProcessingService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -35,14 +34,16 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
         OAuth2User user = oauthToken.getPrincipal();
 
-        OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
-                oauthToken.getAuthorizedClientRegistrationId(),
-                oauthToken.getName());
+//        OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
+//                oauthToken.getAuthorizedClientRegistrationId(),
+//                oauthToken.getName());
 
-        String accessToken = client.getAccessToken().getTokenValue();
+        // ✅ Get the registration ID ("google", "github", etc.)
+        String registrationId = oauthToken.getAuthorizedClientRegistrationId();
 
-        // Now you can use user info and accessToken
-        ResponseEntity<UserInfoResponse> oauthLoginResponse = authService.handleOauth2loginRequest(user, accessToken);
+        // Pass the correct registrationId to the service
+        ResponseEntity<UserInfoResponse> oauthLoginResponse = oAuth2UserProcessingService.handleOauth2loginRequest(user, registrationId);
+
 
         response.setStatus(oauthLoginResponse.getStatusCode().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
