@@ -155,7 +155,7 @@ public class AuthServiceImpl implements AuthService {
         String providerId = oauth2utils.determineProviderIdFromOauth2user(user, accessToken);
 
 //        check if user is present with same type and id
-        Optional<User>r user = userRepository.findByProviderIdAndProviderType(providerId,authProviderType);
+        User user = userRepository.findByProviderIdAndProviderType(providerId, authProviderType).orElse(null);
 
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hi");
