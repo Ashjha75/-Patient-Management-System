@@ -1,5 +1,6 @@
 package com.patientmanagement.patientservice.serviceImplementation;
 
+import com.patientmanagement.patientservice.dto.Oauth2LoginRequestDto;
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
 import com.patientmanagement.patientservice.exception.ApiException;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -143,26 +145,53 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public ResponseEntity<String> completeProfile(UserRequestDto userRequest) {
-        return null;
-    }
+    public ResponseEntity<UserInfoResponse> handleOauth2loginRequest(OAuth2User oAuth2User, String registrationId) {
+        // 1. Determine provider type & ID
+        AuthProviderType providerType = oauth2utils.getOauthProvider(registrationId);
+        String providerId = oauth2utils.determineProviderIdFromOauth2user(oAuth2User, registrationId);
 
-    public ResponseEntity<UserInfoResponse> handleOauth2loginRequest(OAuth2User oAuth2User, String accessToken) {
+        // 2. Try to find existing user by providerId + providerType
+        User user = userRepository.findByProviderIdAndProviderType(providerId, providerType).orElse(null);
 
-
-//        Fetch providertype and provider id both
-        AuthProviderType authProviderType = oauth2utils.getOauthProvider(accessToken);
-        String providerId = oauth2utils.determineProviderIdFromOauth2user(oAuth2User, accessToken);
-
-//        check if user is present with same type and id
-        User user = userRepository.findByProviderIdAndProviderType(providerId, authProviderType).orElse(null);
+        // 3. Fetch email from OAuth2 user
         String email = oAuth2User.getAttribute("email");
+        User userByEmail = (email != null) ? userRepository.findByEmail(email).orElse(null) : null;
 
-        User isExistingUser = userRepository.findByEmail(email).orElse(null);
-
-        if (isExistingUser == null && user == null) {
-            
+        // 4. Handle new user signup
+        if (user == null && userByEmail == null) {
+            String username = oauth2utils.determineUsernameFromOauth2user(oAuth2User, registrationId, providerId);
+            user = registerNewOauth2User(username, email, providerId, providerType);
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hi");
+        // 5. Existing provider user → update email if needed
+        else if (user != null) {
+            if (email != null && !email.isBlank()) {
+                user.setEmail(email);
+                userRepository.save(user);
+            }
+        }
+        // 6. Email conflict
+        else {
+            throw new BadCredentialsException("Username or email already exists");
+        }
+
+        return new UserInfoResponse(user.getId(), user.getUsername(), user.getEmail(), providerType.name());
     }
+
+    private User registerNewOauth2User(String username, String email, String providerId, AuthProviderType providerType) {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("Username must not be empty");
+        }
+        if (userRepository.existsByUsername(username)) {
+            throw new ApiException("Username already exists");
+        }
+        if (email != null && userRepository.existsByEmail(email)) {
+            throw new ApiException("Email already exists");
+        }
+
+        User newUser = new User(username, null, email); // password null for OAuth2
+        newUser.setProviderId(providerId);
+        newUser.setProviderType(providerType);
+        return userRepository.save(newUser);
+    }
+}
 }
