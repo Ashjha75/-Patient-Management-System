@@ -147,17 +147,22 @@ public class AuthServiceImpl implements AuthService {
         return null;
     }
 
-    public ResponseEntity<UserInfoResponse> handleOauth2loginRequest(OAuth2User user, String accessToken) {
+    public ResponseEntity<UserInfoResponse> handleOauth2loginRequest(OAuth2User oAuth2User, String accessToken) {
 
 
 //        Fetch providertype and provider id both
         AuthProviderType authProviderType = oauth2utils.getOauthProvider(accessToken);
-        String providerId = oauth2utils.determineProviderIdFromOauth2user(user, accessToken);
+        String providerId = oauth2utils.determineProviderIdFromOauth2user(oAuth2User, accessToken);
 
 //        check if user is present with same type and id
         User user = userRepository.findByProviderIdAndProviderType(providerId, authProviderType).orElse(null);
+        String email = oAuth2User.getAttribute("email");
 
+        User isExistingUser = userRepository.findByEmail(email).orElse(null);
 
+        if (isExistingUser == null && user == null) {
+            
+        }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hi");
     }
 }

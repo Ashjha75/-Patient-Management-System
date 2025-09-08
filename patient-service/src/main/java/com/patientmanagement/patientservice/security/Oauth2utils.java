@@ -41,4 +41,18 @@ public class Oauth2utils {
     }
 
 
+    public String determineUsernameFromOauth2user(OAuth2User oAuth2User, String registrationId, String providerId) {
+        String email = oAuth2User.getAttribute("email");
+        if (email != null || !email.isBlank()) {
+            return email;
+        }
+
+        return switch (registrationId.toLowerCase()) {
+            case "google" -> oAuth2User.getAttribute("sub"); // Google user ID
+            case "github" -> oAuth2User.getAttribute("login"); // GitHub user ID
+            default -> providerId;
+        };
+    }
+
+
 }
