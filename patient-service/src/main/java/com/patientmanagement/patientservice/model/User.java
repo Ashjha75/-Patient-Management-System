@@ -32,9 +32,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @NotBlank
-    @Size(min = 6, max = 100)
-    @Column(nullable = false)
+
     private String password;
 
     @NotBlank
