@@ -1,10 +1,14 @@
 package com.patientmanagement.patientservice.security;
 
-import com.patientmanagement.patientservice.serviceImplementation.AuthServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.patientmanagement.patientservice.dto.UserInfoResponse;
+import com.patientmanagement.patientservice.service.AuthService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -20,7 +24,8 @@ import java.io.IOException;
 public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final OAuth2AuthorizedClientService authorizedClientService;
-    private final AuthServiceImpl authServiceImpl;
+    private final AuthService authService;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -37,7 +42,12 @@ public class Oauth2SuccessHandler implements AuthenticationSuccessHandler {
         String accessToken = client.getAccessToken().getTokenValue();
 
         // Now you can use user info and accessToken
-        authServiceImpl.handleOauth2loginRequest(user, accessToken);
+        ResponseEntity<UserInfoResponse> oauthLoginResponse = authService.handleOauth2loginRequest(user, accessToken);
+
+        response.setStatus(oauthLoginResponse.getStatusCode().value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+        response.getWriter().write(objectMapper.writeValueAsString(oauthLoginResponse.getBody()));
     }
 }
 

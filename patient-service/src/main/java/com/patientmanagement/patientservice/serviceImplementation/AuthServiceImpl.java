@@ -1,6 +1,5 @@
 package com.patientmanagement.patientservice.serviceImplementation;
 
-import com.patientmanagement.patientservice.dto.Oauth2LoginRequestDto;
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
 import com.patientmanagement.patientservice.exception.ApiException;
@@ -17,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -143,6 +141,11 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    @Override
+    public ResponseEntity<String> completeProfile(UserRequestDto userRequest) {
+        return null;
+    }
+
 
     @Override
     public ResponseEntity<UserInfoResponse> handleOauth2loginRequest(OAuth2User oAuth2User, String registrationId) {
@@ -164,18 +167,28 @@ public class AuthServiceImpl implements AuthService {
         }
         // 5. Existing provider user → update email if needed
         else if (user != null) {
-            if (email != null && !email.isBlank()) {
+            if (email != null && !email.isBlank() && !email.equals(user.getEmail())) {
                 user.setEmail(email);
                 userRepository.save(user);
             }
         }
         // 6. Email conflict
         else {
-            throw new BadCredentialsException("Username or email already exists");
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new UserInfoResponse(null, null, email, "Username or email already exists"));
         }
 
-        return new UserInfoResponse(user.getId(), user.getUsername(), user.getEmail(), providerType.name());
+        // ✅ Build response with proper fields
+        UserInfoResponse response = new UserInfoResponse(
+                String.valueOf(user.getUsername()),  // id as String (or change DTO type to Long)
+                user.getUsername(),
+                user.getEmail(),
+                providerType.name()
+        );
+
+        return ResponseEntity.ok(response);
     }
+
 
     private User registerNewOauth2User(String username, String email, String providerId, AuthProviderType providerType) {
         if (username == null || username.isBlank()) {
@@ -193,5 +206,4 @@ public class AuthServiceImpl implements AuthService {
         newUser.setProviderType(providerType);
         return userRepository.save(newUser);
     }
-}
 }
