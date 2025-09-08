@@ -42,6 +42,7 @@ import java.util.Set;
 public class SecurityConfig {
 
     private final AuthEntryPointJwt unauthorizedHandler;
+    private final Oauth2SuccessHandler oauth2SuccessHandler;
 
 
     @Bean
@@ -65,11 +66,14 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 
         http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
-        http.oauth2Login(oauth -> oauth.failureHandler(
-                (request, response, exception) -> {
-                    throw new ApiException("oAuth login failed");
-                }
-        ));
+        http.oauth2Login(oauth -> oauth
+                .failureHandler(
+                        (request, response, exception) -> {
+                            throw new ApiException("oAuth login failed");
+                        }
+                )
+                .successHandler(oauth2SuccessHandler)
+        );
         return http.build();
     }
 

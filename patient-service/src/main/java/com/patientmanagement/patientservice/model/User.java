@@ -1,5 +1,6 @@
 package com.patientmanagement.patientservice.model;
 
+import com.patientmanagement.patientservice.util.enums.AuthProviderType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -54,7 +55,10 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Patient patient;
 
-    // Similarly, add Doctor later
+    private String providerId;
+
+    @Enumerated(EnumType.STRING)
+    private AuthProviderType providerType;
 
 
     public User(String username, String password, String email) {
