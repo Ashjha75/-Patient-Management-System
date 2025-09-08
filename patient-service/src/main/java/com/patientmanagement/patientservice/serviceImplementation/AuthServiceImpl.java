@@ -6,8 +6,10 @@ import com.patientmanagement.patientservice.exception.ApiException;
 import com.patientmanagement.patientservice.model.User;
 import com.patientmanagement.patientservice.repository.UserRepository;
 import com.patientmanagement.patientservice.security.JwtUtils;
+import com.patientmanagement.patientservice.security.Oauth2utils;
 import com.patientmanagement.patientservice.security.TokenBlacklistService;
 import com.patientmanagement.patientservice.service.AuthService;
+import com.patientmanagement.patientservice.util.enums.AuthProviderType;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -44,6 +47,7 @@ public class AuthServiceImpl implements AuthService {
     private final TokenBlacklistService tokenBlacklistService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Oauth2utils oauth2utils;
 
     @Override
     public ResponseEntity<String> registerUser(UserRequestDto userRequestDto) {
@@ -141,5 +145,19 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public ResponseEntity<String> completeProfile(UserRequestDto userRequest) {
         return null;
+    }
+
+    public ResponseEntity<UserInfoResponse> handleOauth2loginRequest(OAuth2User user, String accessToken) {
+
+
+//        Fetch providertype and provider id both
+        AuthProviderType authProviderType = oauth2utils.getOauthProvider(accessToken);
+        String providerId = oauth2utils.determineProviderIdFromOauth2user(user, accessToken);
+
+//        check if user is present with same type and id
+        Optional<User>r user = userRepository.findByProviderIdAndProviderType(providerId,authProviderType);
+
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Hi");
     }
 }
