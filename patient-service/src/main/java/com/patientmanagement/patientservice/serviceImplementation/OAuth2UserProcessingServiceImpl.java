@@ -66,7 +66,9 @@ public class OAuth2UserProcessingServiceImpl implements OAuth2UserProcessingServ
 
 
     public User registerNewOauth2User(String username, String email, String providerId, AuthProviderType providerType) {
+
         if (username == null || username.isBlank()) {
+            
             throw new IllegalArgumentException("Username must not be empty");
         }
         if (userRepository.existsByUsername(username)) {
