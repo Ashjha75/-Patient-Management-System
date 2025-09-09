@@ -49,28 +49,12 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/public/**", "/api/v1/docs/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/api/v1/swagger-ui/**", "/api/v1/swagger-ui.html", "/api/v1/swagger-resources/**", "/webjars/**").permitAll()
-                        .requestMatchers("/health", "/favicon.ico").permitAll()
-                        .requestMatchers("/api/v1/login", "/api/v1/login/google", "/api/v1/login/github", "/oauth2/**", "/login/oauth2/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
+        http.csrf(AbstractHttpConfigurer::disable).cors(cors -> cors.configurationSource(corsConfigurationSource())).exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler)).sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/api/public/**", "/api/v1/docs/**").permitAll().requestMatchers("/v3/api-docs/**", "/api/v1/swagger-ui/**", "/api/v1/swagger-ui.html", "/api/v1/swagger-resources/**", "/webjars/**").permitAll().requestMatchers("/health", "/favicon.ico").permitAll().requestMatchers("/api/v1/login", "/api/v1/login/google", "/api/v1/login/github", "/oauth2/**", "/login/oauth2/**", "/api/v1/login/oauth2/**").permitAll().anyRequest().authenticated()).headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 
         http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
-        http.oauth2Login(oauth -> oauth
-                .failureHandler(
-                        (request, response, exception) -> {
-                            throw new ApiException("oAuth login failed");
-                        }
-                )
-                .successHandler(oauth2SuccessHandler)
-        );
+        http.oauth2Login(oauth -> oauth.failureHandler((request, response, exception) -> {
+            throw new ApiException("oAuth login failed");
+        }).successHandler(oauth2SuccessHandler));
         return http.build();
     }
 
@@ -89,36 +73,20 @@ public class SecurityConfig {
 
 
     @Bean
-    CommandLineRunner init(
-            UserRepository userRepository,
-            RoleRepository roleRepository,
-            ModuleRepository moduleRepository,
-            RolePermissionRepository rolePermissionRepository,
-            PasswordEncoder passwordEncoder
-    ) {
+    CommandLineRunner init(UserRepository userRepository, RoleRepository roleRepository, ModuleRepository moduleRepository, RolePermissionRepository rolePermissionRepository, PasswordEncoder passwordEncoder) {
         return args -> {
             // 1. Create Modules
             Module patientModule = createModuleIfNotFound(moduleRepository, "Patient Management", "PATIENT_MANAGEMENT", "/api/patients");
             Module userModule = createModuleIfNotFound(moduleRepository, "User Management", "USER_MANAGEMENT", "/api/users");
 
             // 2. Create Roles and grant them Permissions
-            Role patientRole = createRoleAndAssignPermissions(
-                    roleRepository,
-                    rolePermissionRepository,
-                    "PATIENT",
-                    patientModule,
+            Role patientRole = createRoleAndAssignPermissions(roleRepository, rolePermissionRepository, "PATIENT", patientModule,
                     // A patient can only VIEW their own data (controller logic will enforce 'own')
-                    Set.of(Permission.VIEW)
-            );
+                    Set.of(Permission.VIEW));
 
-            Role superAdminRole = createRoleAndAssignPermissions(
-                    roleRepository,
-                    rolePermissionRepository,
-                    "SUPER_ADMIN",
-                    patientModule,
+            Role superAdminRole = createRoleAndAssignPermissions(roleRepository, rolePermissionRepository, "SUPER_ADMIN", patientModule,
                     // Admin gets all permissions for the patient module
-                    Set.of(Permission.CREATE, Permission.VIEW, Permission.EDIT, Permission.DELETE, Permission.LIST)
-            );
+                    Set.of(Permission.CREATE, Permission.VIEW, Permission.EDIT, Permission.DELETE, Permission.LIST));
             // Also give admin rights to user management
             assignPermissionsToRole(rolePermissionRepository, superAdminRole, userModule, Set.of(Permission.CREATE, Permission.VIEW, Permission.EDIT, Permission.DELETE, Permission.LIST));
 
