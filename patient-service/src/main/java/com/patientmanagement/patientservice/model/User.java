@@ -16,7 +16,11 @@ import java.util.Set;
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "username"),
                 @UniqueConstraint(columnNames = "email")
-        })
+        },
+        indexes = {
+                @Index(name = "idx_provider", columnList = "provider_id, provider_type")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -33,7 +37,9 @@ public class User {
     private String username;
 
 
+    @Column(nullable = true)
     private String password;
+
 
     @NotBlank
     @Size(max = 100)

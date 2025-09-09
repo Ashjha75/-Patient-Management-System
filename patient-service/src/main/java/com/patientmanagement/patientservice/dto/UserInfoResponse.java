@@ -1,12 +1,11 @@
 package com.patientmanagement.patientservice.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -21,7 +20,6 @@ public class UserInfoResponse {
     private List<String> roles;
 
     public UserInfoResponse(String jwtToken, String userName, List<String> roles) {
-//        this.id = id;
         this.userName = userName;
         this.roles = roles;
         this.jwtToken = jwtToken;
@@ -33,6 +31,10 @@ public class UserInfoResponse {
         this.roles = roles;
     }
 
-    public UserInfoResponse(Object o, @NotBlank @Size(min = 3, max = 50) String username, @NotBlank @Size(max = 100) String email, String name) {
+    public UserInfoResponse(String jwtToken, String userName, String email, String provider) {
+        this.jwtToken = jwtToken;
+        this.userName = userName;
+        this.roles = new ArrayList<>();
+        this.roles.add(provider);
     }
 }
