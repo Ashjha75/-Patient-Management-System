@@ -47,29 +47,30 @@ public class CustomUserDetailsService implements UserDetailsService {
         String trimmedUsername = username.trim();
         log.debug("Loading user details for username: {}", trimmedUsername);
 
-        User user = userRepository.findByUsername(trimmedUsername)
-                .orElseThrow(() -> {
-                    log.warn("User not found with username: {}", trimmedUsername);
-                    return new UsernameNotFoundException("User not found with username: " + trimmedUsername);
-                });
+        User user = userRepository.findByUsername(trimmedUsername).orElseThrow(() -> {
+            log.warn("User not found with username: {}", trimmedUsername);
+            return new UsernameNotFoundException("User not found with username: " + trimmedUsername);
+        });
 
-        log.debug("Successfully loaded user: {} with {} roles",
-                user.getUsername(), user.getRoles().size());
+        log.debug("Successfully loaded user: {} with {} roles", user.getUsername(), user.getRoles().size());
 
         // Convert roles to GrantedAuthority
-        List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> (GrantedAuthority) new SimpleGrantedAuthority(role.getRoleName()))
-                .collect(Collectors.toList());
+        List<GrantedAuthority> authorities = user.getRoles().stream().map(role -> new SimpleGrantedAuthority(role.getRoleName())).collect(Collectors.toList());
 
-        // Return Spring Security User
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                user.isEnabled(),
-                true,
-                true,
-                true,
-                authorities
-        );
+        // ✅ Handle local vs OAuth users
+        if (user.getProviderType() != null && !user.getProviderType().name().equalsIgnoreCase("LOCAL")) {
+            // OAuth user → no password required, provide empty string
+            return new org.springframework.security.core.userdetails.User(user.getUsername(), "",   // 👈 empty string instead of null
+                    user.isEnabled(), true, true, true, authorities);
+        }
+
+        // Local user → password must be present
+        if (!StringUtils.hasText(user.getPassword())) {
+            log.error("Local user {} has no password set", user.getUsername());
+            throw new UsernameNotFoundException("Local user has no password configured");
+        }
+
+        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), user.isEnabled(), true, true, true, authorities);
     }
+
 }
