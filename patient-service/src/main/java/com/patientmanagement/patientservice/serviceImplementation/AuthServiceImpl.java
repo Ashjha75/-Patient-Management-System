@@ -59,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
         }
         boolean emailExists = userRepository.existsByEmail(userRequestDto.getEmail());
         if (emailExists) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already exists.");
+            throw new ApiException("Email already exists.");
         }
 
         userRepository.save(new User(userRequestDto.getUsername(), passwordEncoder.encode(userRequestDto.getPassword()), userRequestDto.getEmail()));
@@ -92,7 +92,7 @@ public class AuthServiceImpl implements AuthService {
             log.debug("Authentication successful for {}", usernameToAuth);
         } catch (AuthenticationException e) {
             log.error("Authentication failed for input: {}", loginInput, e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new ApiException("Invalid username or password");
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);

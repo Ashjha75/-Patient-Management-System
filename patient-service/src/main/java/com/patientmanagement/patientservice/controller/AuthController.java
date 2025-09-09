@@ -9,15 +9,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -49,6 +48,16 @@ public class AuthController {
         return authService.authenticateUser(userRequest);
     }
 
+    @GetMapping("/api/v1/login/google")
+    public void googleLogin(HttpServletResponse response) throws IOException {
+        response.sendRedirect("/oauth2/authorization/google"); // or your provider
+    }
+
+    @GetMapping("/api/v1/login/github")
+    public void githubLogin(HttpServletResponse response) throws IOException {
+        response.sendRedirect("/oauth2/authorization/google"); // or your provider
+    }
+
     @PostMapping("/logout")
     @Operation(
             summary = "Logout user",
@@ -77,4 +86,6 @@ public class AuthController {
     public ResponseEntity<String> completeProfile(@Validated(RegistrationValidationGroup.class) @RequestBody UserRequestDto userRequest) {
         return authService.completeProfile(userRequest);
     }
+
+
 }
