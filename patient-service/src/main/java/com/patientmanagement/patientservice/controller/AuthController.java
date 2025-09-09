@@ -55,7 +55,7 @@ public class AuthController {
 
     @GetMapping("/api/v1/login/github")
     public void githubLogin(HttpServletResponse response) throws IOException {
-        response.sendRedirect("/oauth2/authorization/google"); // or your provider
+        response.sendRedirect("/oauth2/authorization/github"); // or your provider
     }
 
     @PostMapping("/logout")
