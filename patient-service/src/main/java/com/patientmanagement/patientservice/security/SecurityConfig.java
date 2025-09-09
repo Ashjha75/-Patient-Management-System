@@ -1,6 +1,5 @@
 package com.patientmanagement.patientservice.security;
 
-import com.patientmanagement.patientservice.exception.ApiException;
 import com.patientmanagement.patientservice.model.Module;
 import com.patientmanagement.patientservice.model.Role;
 import com.patientmanagement.patientservice.model.RolePermission;
@@ -52,9 +51,18 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable).cors(cors -> cors.configurationSource(corsConfigurationSource())).exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler)).sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/api/public/**", "/api/v1/docs/**").permitAll().requestMatchers("/v3/api-docs/**", "/api/v1/swagger-ui/**", "/api/v1/swagger-ui.html", "/api/v1/swagger-resources/**", "/webjars/**").permitAll().requestMatchers("/health", "/favicon.ico").permitAll().requestMatchers("/api/v1/login", "/api/v1/login/google", "/api/v1/login/github", "/oauth2/**", "/login/oauth2/**", "/api/v1/login/oauth2/**").permitAll().anyRequest().authenticated()).headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 
         http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
-        http.oauth2Login(oauth -> oauth.failureHandler((request, response, exception) -> {
-            throw new ApiException("oAuth login failed");
-        }).successHandler(oauth2SuccessHandler));
+
+        http.oauth2Login(oauth -> oauth
+                .failureHandler((request, response, exception) -> {
+                    // Consider redirecting to a UI error page instead of throwing
+                    response.sendRedirect("/error?message=oauth_failed");
+                })
+                .successHandler(oauth2SuccessHandler)
+                // ✅ The redirectionEndpoint is now correctly placed inside the lambda
+                .redirectionEndpoint(endpoint ->
+                        endpoint.baseUri("/api/v1/login/oauth2/*")
+                )
+        );
         return http.build();
     }
 
