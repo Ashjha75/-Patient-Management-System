@@ -1,6 +1,7 @@
 package com.patientmanagement.patientservice.util.enums;
 
 public enum AppRoles {
+    ROLE_USER,
     ROLE_ADMIN,        // Super admin → can manage everything
     ROLE_SUBADMIN,     // Created by ADMIN, limited permissions
     ROLE_DOCTOR,       // Can view/manage patients, write prescriptions

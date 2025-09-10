@@ -3,10 +3,11 @@ package com.patientmanagement.patientservice.serviceImplementation;
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
 import com.patientmanagement.patientservice.exception.ApiException;
+import com.patientmanagement.patientservice.model.Role;
 import com.patientmanagement.patientservice.model.User;
+import com.patientmanagement.patientservice.repository.RoleRepository;
 import com.patientmanagement.patientservice.repository.UserRepository;
 import com.patientmanagement.patientservice.security.JwtUtils;
-import com.patientmanagement.patientservice.security.Oauth2utils;
 import com.patientmanagement.patientservice.security.TokenBlacklistService;
 import com.patientmanagement.patientservice.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,24 +46,35 @@ public class AuthServiceImpl implements AuthService {
     private final TokenBlacklistService tokenBlacklistService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final Oauth2utils oauth2utils;
+    private RoleRepository roleRepository;
+
 
     @Override
     public ResponseEntity<String> registerUser(UserRequestDto userRequestDto) {
-        if (userRequestDto.getUsername() == null || userRequestDto.getUsername().isBlank() || userRequestDto.getPassword() == null || userRequestDto.getPassword().isBlank()) {
+        if (userRequestDto.getUsername() == null || userRequestDto.getUsername().isBlank() ||
+                userRequestDto.getPassword() == null || userRequestDto.getPassword().isBlank()) {
             return ResponseEntity.badRequest().body("Username and password must not be empty.");
         }
 
-        boolean userExists = userRepository.existsByUsername(userRequestDto.getUsername());
-        if (userExists) {
+        if (userRepository.existsByUsername(userRequestDto.getUsername())) {
             throw new ApiException("Username Already Exist");
         }
-        boolean emailExists = userRepository.existsByEmail(userRequestDto.getEmail());
-        if (emailExists) {
+        if (userRepository.existsByEmail(userRequestDto.getEmail())) {
             throw new ApiException("Email already exists.");
         }
 
-        userRepository.save(new User(userRequestDto.getUsername(), passwordEncoder.encode(userRequestDto.getPassword()), userRequestDto.getEmail()));
+        User user = new User(
+                userRequestDto.getUsername(),
+                passwordEncoder.encode(userRequestDto.getPassword()),
+                userRequestDto.getEmail()
+        );
+
+        // Assign default role
+        Role defaultRole = roleRepository.findByRoleName("ROLE_PATIENT")
+                .orElseThrow(() -> new ApiException("Default role not found"));
+        user.getRoles().add(defaultRole);
+
+        userRepository.save(user);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully.");
     }
