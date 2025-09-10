@@ -51,7 +51,7 @@ public class User {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"), // ✅ FK points to user_id
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
@@ -60,6 +60,9 @@ public class User {
     private Patient patient;
 
     private String providerId;
+
+    @Column(name = "user_image")
+    private String userImage; // S3 URL for profile image
 
     @Enumerated(EnumType.STRING)
     private AuthProviderType providerType;

@@ -3,9 +3,7 @@ package com.patientmanagement.patientservice.dto;
 import com.patientmanagement.patientservice.dto.validators.CreatePatientValidationGroup;
 import com.patientmanagement.patientservice.dto.validators.UpdatePatientValidationGroup;
 import com.patientmanagement.patientservice.dto.validators.ValidAge;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -15,9 +13,13 @@ import java.time.LocalDate;
 
 @Data
 public class PatientRequestDto {
-
+    // For update only, not required for creation
     @NotNull(groups = UpdatePatientValidationGroup.class, message = "id field is required for updates")
     private String id;
+
+    // Optional: S3/dummy image URL
+    @Schema(description = "Profile image URL (S3)")
+    private String userImage;
 
     @NotBlank(message = "First name is required")
     @Size(min = 1, max = 50, message = "First name must be between 1 and 50 characters")
@@ -29,15 +31,6 @@ public class PatientRequestDto {
     @Schema(defaultValue = "Doe")
     private String lastName;
 
-    @NotBlank(message = "Username is required")
-    @Size(min = 3, max = 20, message = "Username must be between 3 and 20 characters")
-    @Schema(defaultValue = "johndoe")
-    private String username;
-
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email should be valid")
-    @Schema(defaultValue = "john.doe@example.com")
-    private String email;
 
     @ValidAge(min = 18, message = "Patient must be at least 18 years old")
     @NotNull(message = "Date of birth is required")

@@ -4,8 +4,6 @@ import com.patientmanagement.patientservice.dto.PatientPageResponseDTO;
 import com.patientmanagement.patientservice.dto.PatientRequestDto;
 import com.patientmanagement.patientservice.dto.PatientResponseDTO;
 
-import java.util.List;
-
 
 public interface PatientService {
     PatientPageResponseDTO getAllPatients(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
@@ -19,4 +17,6 @@ public interface PatientService {
 
 
     void deletePatient(String username);
+
+    PatientResponseDTO completePatientProfile(String username, PatientRequestDto patientRequestDto, byte[] profileImageBytes);
 }
