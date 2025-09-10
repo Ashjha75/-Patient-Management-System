@@ -46,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
     private final TokenBlacklistService tokenBlacklistService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
 
 
     @Override
@@ -70,7 +70,7 @@ public class AuthServiceImpl implements AuthService {
         );
 
         // Assign default role
-        Role defaultRole = roleRepository.findByRoleName("ROLE_PATIENT")
+        Role defaultRole = roleRepository.findByRoleName("ROLE_USER")
                 .orElseThrow(() -> new ApiException("Default role not found"));
         user.getRoles().add(defaultRole);
 

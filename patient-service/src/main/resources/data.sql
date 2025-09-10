@@ -22,8 +22,6 @@ CREATE TABLE IF NOT EXISTS users
     updated_at TIMESTAMP             DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- The 'roles' table is now simpler. It just defines the role's name.
--- The direct link to permissions is now in the 'role_permissions' table.
 CREATE TABLE IF NOT EXISTS roles
 (
     role_id   BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -39,7 +37,6 @@ CREATE TABLE IF NOT EXISTS user_roles
     FOREIGN KEY (role_id) REFERENCES roles (role_id) ON DELETE CASCADE
 );
 
-
 -- ====================================================================================
 -- STEP 2: NEW DYNAMIC PERMISSION TABLES (MODULE, ROLE_PERMISSIONS, GRANTED_PERMISSIONS)
 -- ====================================================================================
@@ -48,8 +45,8 @@ CREATE TABLE IF NOT EXISTS modules
 (
     id          BIGINT AUTO_INCREMENT PRIMARY KEY,
     module_name VARCHAR(100) NOT NULL UNIQUE,
-    module_key  VARCHAR(100) NOT NULL UNIQUE, -- e.g., 'PATIENT_MANAGEMENT'
-    url_path    VARCHAR(255) NOT NULL         -- e.g., '/api/patients'
+    module_key  VARCHAR(100) NOT NULL UNIQUE,
+    url_path    VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS role_permissions
@@ -59,18 +56,16 @@ CREATE TABLE IF NOT EXISTS role_permissions
     module_id BIGINT NOT NULL,
     FOREIGN KEY (role_id) REFERENCES roles (role_id) ON DELETE CASCADE,
     FOREIGN KEY (module_id) REFERENCES modules (id) ON DELETE CASCADE,
-    UNIQUE KEY (role_id, module_id) -- A role can only have one set of permissions per module
+    UNIQUE KEY (role_id, module_id)
 );
 
--- This table holds the actual permissions (CREATE, VIEW, etc.) for a specific role-module link.
 CREATE TABLE IF NOT EXISTS granted_permissions
 (
     role_permission_id BIGINT      NOT NULL,
-    permission         VARCHAR(20) NOT NULL, -- e.g., 'CREATE', 'EDIT', 'VIEW'
+    permission         VARCHAR(20) NOT NULL,
     PRIMARY KEY (role_permission_id, permission),
     FOREIGN KEY (role_permission_id) REFERENCES role_permissions (id) ON DELETE CASCADE
 );
-
 
 -- ====================================================================================
 -- STEP 3: APPLICATION-SPECIFIC TABLES (e.g., Patients)
@@ -92,12 +87,11 @@ CREATE TABLE IF NOT EXISTS patients
     country           VARCHAR(100) NOT NULL,
     postal_code       VARCHAR(20)  NOT NULL,
     registration_date DATE         NOT NULL,
-    user_id           BIGINT       NOT NULL UNIQUE, -- A user can only be linked to one patient profile
+    user_id           BIGINT       NOT NULL UNIQUE,
     created_at        TIMESTAMP    NOT NULL,
     updated_at        TIMESTAMP    NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
-
 
 -- ====================================================================================
 -- STEP 4: INSERTING SAMPLE DATA
@@ -110,12 +104,11 @@ VALUES ('Patient Management', 'PATIENT_MANAGEMENT', '/api/patients'),
        ('Role Management', 'ROLE_MANAGEMENT', '/api/roles');
 
 -- Insert Roles
--- These are now just names. The power comes from the permissions we assign next.
 INSERT INTO roles (role_name)
-VALUES ('SUPER_ADMIN'),
-       ('PATIENT'),
-       ('FRONT_DESK_STAFF');
--- A new dynamic role
+VALUES ('ROLE_ADMIN'),
+       ('ROLE_USER'),
+       ('ROLE_PATIENT'),
+       ('ROLE_RECEPTIONIST');
 
 -- Insert Users
 INSERT INTO users (username, password, email)
@@ -124,78 +117,72 @@ VALUES ('superadmin', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8
        ('janesmith', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD', 'jane.smith@example.com'),
        ('frontdesk', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD', 'frontdesk@clinic.com');
 
-
 -- Assign Roles to Users
 INSERT INTO user_roles (user_id, role_id)
 VALUES ((SELECT user_id FROM users WHERE username = 'superadmin'),
-        (SELECT role_id FROM roles WHERE role_name = 'SUPER_ADMIN')),
+        (SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN')),
        ((SELECT user_id FROM users WHERE username = 'johndoe'),
-        (SELECT role_id FROM roles WHERE role_name = 'PATIENT')),
+        (SELECT role_id FROM roles WHERE role_name = 'ROLE_USER')),
        ((SELECT user_id FROM users WHERE username = 'janesmith'),
-        (SELECT role_id FROM roles WHERE role_name = 'PATIENT')),
+        (SELECT role_id FROM roles WHERE role_name = 'ROLE_PATIENT')),
        ((SELECT user_id FROM users WHERE username = 'frontdesk'),
-        (SELECT role_id FROM roles WHERE role_name = 'FRONT_DESK_STAFF'));
-
+        (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST'));
 
 -- ====================================================================================
 -- STEP 5: ASSIGNING DYNAMIC PERMISSIONS TO ROLES
--- This is the key part of the new system.
 -- ====================================================================================
 
--- Grant 'FRONT_DESK_STAFF' permissions for 'Patient Management'
--- 1. Create the link between the role and the module
+-- Grant 'ROLE_RECEPTIONIST' permissions for 'Patient Management'
 INSERT INTO role_permissions (role_id, module_id)
-VALUES ((SELECT role_id FROM roles WHERE role_name = 'FRONT_DESK_STAFF'),
+VALUES ((SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST'),
         (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT'));
 
--- 2. Grant the specific permissions for that link
 INSERT INTO granted_permissions (role_permission_id, permission)
 VALUES ((SELECT id
          FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'FRONT_DESK_STAFF')
+         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST')
            AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'CREATE'),
        ((SELECT id
          FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'FRONT_DESK_STAFF')
+         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST')
            AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'VIEW'),
        ((SELECT id
          FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'FRONT_DESK_STAFF')
+         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST')
            AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'EDIT');
--- NOTE: We did NOT grant 'DELETE' permission to the front desk staff.
 
--- Grant 'SUPER_ADMIN' ALL permissions for ALL modules
+-- Grant 'ROLE_ADMIN' ALL permissions for ALL modules
 -- For Patient Management
 INSERT INTO role_permissions (role_id, module_id)
-VALUES ((SELECT role_id FROM roles WHERE role_name = 'SUPER_ADMIN'),
+VALUES ((SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN'),
         (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT'));
+
 INSERT INTO granted_permissions (role_permission_id, permission)
 VALUES ((SELECT id
          FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'SUPER_ADMIN')
+         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN')
            AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'CREATE'),
        ((SELECT id
          FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'SUPER_ADMIN')
+         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN')
            AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'VIEW'),
        ((SELECT id
          FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'SUPER_ADMIN')
+         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN')
            AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'EDIT'),
        ((SELECT id
          FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'SUPER_ADMIN')
+         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN')
            AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'DELETE'),
        ((SELECT id
          FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'SUPER_ADMIN')
+         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN')
            AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'LIST');
--- (You would repeat this for User Management and Role Management for the SUPER_ADMIN)
 
+-- Repeat for other modules as needed...
 
 -- ====================================================================================
 -- STEP 6: Insert data into the child table (patients)
--- This part remains largely the same.
 -- ====================================================================================
 
 INSERT INTO patients (id, first_name, last_name, username, email, date_of_birth, gender, address_line1, city, state,
