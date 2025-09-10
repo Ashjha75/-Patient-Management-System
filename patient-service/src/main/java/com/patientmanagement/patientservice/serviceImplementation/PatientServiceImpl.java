@@ -13,7 +13,6 @@ import com.patientmanagement.patientservice.repository.PatientRepository;
 import com.patientmanagement.patientservice.repository.UserRepository;
 import com.patientmanagement.patientservice.service.PatientService;
 import com.patientmanagement.patientservice.util.IdGenerator;
-import com.patientmanagement.patientservice.util.IsValidEmail;
 import com.patientmanagement.patientservice.util.enums.Gender;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -90,7 +89,7 @@ public class PatientServiceImpl implements PatientService {
         Patient savedPatient = patientRepository.save(patient);
 
         // 7. Create billing account
-        billingServiceGrpcClient.createBillingAccount(savedPatient.getId(), savedPatient.getFirstName(), savedPatient.getEmail());
+        billingServiceGrpcClient.createBillingAccount(savedPatient.getFirstName(), savedPatient.getEmail());
 
         // 8. Return DTO
         return PatientMapper.toDTO(savedPatient);
@@ -105,7 +104,6 @@ public class PatientServiceImpl implements PatientService {
         }
 
         updateName(patient, dto);
-        updateEmail(patient, dto);
         updateDateOfBirth(patient, dto);
         updateGender(patient, dto);
         updateAddress(patient, dto);
@@ -123,18 +121,6 @@ public class PatientServiceImpl implements PatientService {
         }
     }
 
-    private void updateEmail(Patient patient, PatientRequestDto dto) {
-        if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty() && !patient.getEmail().equals(dto.getEmail().trim())) {
-            String email = dto.getEmail().trim();
-            if (!IsValidEmail.isValidEmail(email)) {
-                throw new ApiException("Invalid email format");
-            }
-            if (patientRepository.existsByEmail(email)) {
-                throw new ApiException("Email already exists");
-            }
-            patient.setEmail(email);
-        }
-    }
 
     private void updateDateOfBirth(Patient patient, PatientRequestDto dto) {
         if (dto.getDateOfBirth() != null) {
