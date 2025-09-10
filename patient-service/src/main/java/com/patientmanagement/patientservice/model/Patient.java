@@ -1,6 +1,5 @@
 package com.patientmanagement.patientservice.model;
 
-
 import com.patientmanagement.patientservice.util.enums.Gender;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -16,88 +15,86 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-    @Entity
-    @Table(name = "patients")
-    @Data // Lombok: generates getters, setters, toString, equals, hashCode
-    @NoArgsConstructor // Lombok: no-args constructor (required by JPA)
-    @AllArgsConstructor // Lombok: all-args constructor
-    //@Builder // Lombok: builder pattern
-    public class Patient implements Serializable {
 
-        @Serial
-        private static final long serialVersionUID = 1L;
+@Entity
+@Table(name = "patients")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Patient implements Serializable {
 
-//        @GeneratedValue(strategy = GenerationType.UUID)
+    @Serial
+    private static final long serialVersionUID = 1L;
 
-        @Id
-        private String id;
+    @Id
+    @Column(name = "user_id")
+    private Long id;
 
-        @NotNull
-        @Column(nullable = false)
-        private String firstName;
+    @Column(name = "user_image")
+    private String userImage;
 
-        @NotNull
-        @Column(nullable = false)
-        private String lastName;
+    @NotNull
+    @Column(nullable = false)
+    private String firstName;
 
-        @NotNull
-        @Size(min = 3, max = 20)
-        @Column(unique = true, nullable = false)
-        private String username;
+    @NotNull
+    @Column(nullable = false)
+    private String lastName;
 
-        @NotNull
-        @Email(message = "Please provide correct email")
-        @Column(unique = true, nullable = false)
-        private String email;
+    @NotNull
+    @Size(min = 3, max = 20)
+    @Column(unique = true, nullable = false)
+    private String username;
 
-        @NotNull
-        @Column(nullable = false)
-        private LocalDate dateOfBirth;
+    @NotNull
+    @Email(message = "Please provide correct email")
+    @Column(unique = true, nullable = false)
+    private String email;
 
-        @NotNull
-        @Enumerated(EnumType.STRING)
-        @Column(nullable = false)
-        private Gender gender;
+    @NotNull
+    @Column(nullable = false)
+    private LocalDate dateOfBirth;
 
-        @NotNull
-        @Column(nullable = false)
-        private String addressLine1;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Gender gender;
 
-        private String addressLine2;
+    @NotNull
+    @Column(nullable = false)
+    private String addressLine1;
 
-        @NotNull
-        @Column(nullable = false)
-        private String city;
+    private String addressLine2;
 
-        @NotNull
-        @Column(nullable = false)
-        private String state;
+    @NotNull
+    @Column(nullable = false)
+    private String city;
 
-        @NotNull
-        @Column(nullable = false)
-        private String country;
+    @NotNull
+    @Column(nullable = false)
+    private String state;
 
-        @NotNull
-        @Column(nullable = false)
-        private String postalCode;
+    @NotNull
+    @Column(nullable = false)
+    private String country;
 
-        @NotNull
-        @Column(nullable = false)
-        private LocalDate registrationDate;
+    @NotNull
+    @Column(nullable = false)
+    private String postalCode;
 
+    @NotNull
+    @Column(nullable = false)
+    private LocalDate registrationDate;
 
-        @OneToOne
-        @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
-        private User user;
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
+    private transient User user;
 
-        @CreationTimestamp
-        @Column(updatable = false)
-        // Automatically set when the entity is created
-        private LocalDateTime createdAt;
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 
-        @UpdateTimestamp
-        // Automatically updated when the entity is changed
-        private LocalDateTime updatedAt;
-
-
-    }
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+}
