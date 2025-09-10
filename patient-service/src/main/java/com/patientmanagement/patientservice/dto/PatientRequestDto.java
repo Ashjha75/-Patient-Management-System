@@ -21,6 +21,11 @@ public class PatientRequestDto {
     @Schema(description = "Profile image URL (S3)")
     private String userImage;
 
+    @NotBlank(message = "User name is required")
+    @Size(min = 1, max = 50, message = "User name must be between 1 and 50 characters")
+    @Schema(defaultValue = "John")
+    private String username;
+
     @NotBlank(message = "First name is required")
     @Size(min = 1, max = 50, message = "First name must be between 1 and 50 characters")
     @Schema(defaultValue = "John")

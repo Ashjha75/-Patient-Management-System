@@ -8,7 +8,7 @@ import com.patientmanagement.patientservice.dto.PatientResponseDTO;
 public interface PatientService {
     PatientPageResponseDTO getAllPatients(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
 
-    PatientResponseDTO addPatient(PatientRequestDto patientRequestDto);
+    PatientResponseDTO completePatientProfile(PatientRequestDto patientRequestDto);
 
     //    update patients by username
     PatientResponseDTO updatePatient(String username, PatientRequestDto patientRequestDto);
@@ -18,5 +18,4 @@ public interface PatientService {
 
     void deletePatient(String username);
 
-    PatientResponseDTO completePatientProfile(String username, PatientRequestDto patientRequestDto, byte[] profileImageBytes);
 }

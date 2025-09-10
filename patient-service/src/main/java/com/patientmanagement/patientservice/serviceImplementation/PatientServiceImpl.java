@@ -5,16 +5,17 @@ import com.patientmanagement.patientservice.dto.PatientPageResponseDTO;
 import com.patientmanagement.patientservice.dto.PatientRequestDto;
 import com.patientmanagement.patientservice.dto.PatientResponseDTO;
 import com.patientmanagement.patientservice.exception.ApiException;
-import com.patientmanagement.patientservice.exception.InvalidInputException;
 import com.patientmanagement.patientservice.exception.ResourceNotFound;
 import com.patientmanagement.patientservice.grpc.BillingServiceGrpcClient;
 import com.patientmanagement.patientservice.mapper.PatientMapper;
 import com.patientmanagement.patientservice.model.Patient;
 import com.patientmanagement.patientservice.repository.PatientRepository;
+import com.patientmanagement.patientservice.repository.UserRepository;
 import com.patientmanagement.patientservice.service.PatientService;
 import com.patientmanagement.patientservice.util.IdGenerator;
 import com.patientmanagement.patientservice.util.IsValidEmail;
 import com.patientmanagement.patientservice.util.enums.Gender;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +34,7 @@ import java.util.List;
 public class PatientServiceImpl implements PatientService {
     private final PatientRepository patientRepository;
     private final BillingServiceGrpcClient billingServiceGrpcClient;
+    private final UserRepository userRepository;
 
     @Override
     public PatientPageResponseDTO getAllPatients(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
@@ -40,10 +42,7 @@ public class PatientServiceImpl implements PatientService {
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
         Page<Patient> patientPage = patientRepository.findAll(pageDetails);
 
-        List<PatientResponseDTO> patientDTOs = patientPage.getContent()
-                .stream()
-                .map(PatientMapper::toDTO)
-                .toList();
+        List<PatientResponseDTO> patientDTOs = patientPage.getContent().stream().map(PatientMapper::toDTO).toList();
 
         PatientPageResponseDTO response = new PatientPageResponseDTO();
         response.setData(patientDTOs);
@@ -61,17 +60,39 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public PatientResponseDTO addPatient(PatientRequestDto patientRequestDto) {
+    @Transactional
+    public PatientResponseDTO completePatientProfile(PatientRequestDto patientRequestDto) {
+        // 1. Validate username/email uniqueness
+        if (!userRepository.existsByUsername(patientRequestDto.getUsername())) {
+            throw new ResourceNotFound("User", "username", patientRequestDto.getUsername());
+        }
+        // 2. Check if patient already exists for this username
         if (patientRepository.existsByUsername(patientRequestDto.getUsername())) {
-            throw new InvalidInputException("Username already exists");
+            throw new ApiException("Patient profile already exists for this user");
         }
-        if (patientRepository.existsByEmail(patientRequestDto.getEmail())) {
-            throw new InvalidInputException("Email already exists");
+        // 2. Generate patient ID
+        String patientId = IdGenerator.generatePatientId();
+
+        // 3. Set default profile image if none provided
+        if (patientRequestDto.getUserImage() == null || patientRequestDto.getUserImage().trim().isEmpty()) {
+            patientRequestDto.setUserImage("https://dummyimage.com/400x400/cccccc/000000.png&text=Profile");
         }
-        String id = IdGenerator.generatePatientId();
-        Patient patient = PatientMapper.toModel(patientRequestDto, id);
+
+        // 4. Ensure registrationDate is set (default to today if not provided)
+        if (patientRequestDto.getRegistrationDate() == null) {
+            patientRequestDto.setRegistrationDate(LocalDate.now());
+        }
+
+        // 5. Map DTO -> Entity
+        Patient patient = PatientMapper.toModel(patientRequestDto, patientId);
+
+        // 6. Save patient
         Patient savedPatient = patientRepository.save(patient);
+
+        // 7. Create billing account
         billingServiceGrpcClient.createBillingAccount(savedPatient.getId(), savedPatient.getFirstName(), savedPatient.getEmail());
+
+        // 8. Return DTO
         return PatientMapper.toDTO(savedPatient);
     }
 
@@ -103,8 +124,7 @@ public class PatientServiceImpl implements PatientService {
     }
 
     private void updateEmail(Patient patient, PatientRequestDto dto) {
-        if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty()
-                && !patient.getEmail().equals(dto.getEmail().trim())) {
+        if (dto.getEmail() != null && !dto.getEmail().trim().isEmpty() && !patient.getEmail().equals(dto.getEmail().trim())) {
             String email = dto.getEmail().trim();
             if (!IsValidEmail.isValidEmail(email)) {
                 throw new ApiException("Invalid email format");
@@ -131,10 +151,7 @@ public class PatientServiceImpl implements PatientService {
             try {
                 patient.setGender(Gender.valueOf(dto.getGender().trim().toUpperCase()));
             } catch (IllegalArgumentException e) {
-                throw new ApiException("Invalid gender value. Allowed values: " +
-                        String.join(", ", java.util.Arrays.stream(Gender.values())
-                                .map(Enum::name)
-                                .toArray(String[]::new)));
+                throw new ApiException("Invalid gender value. Allowed values: " + String.join(", ", java.util.Arrays.stream(Gender.values()).map(Enum::name).toArray(String[]::new)));
             }
         }
     }
@@ -175,4 +192,6 @@ public class PatientServiceImpl implements PatientService {
         }
         patientRepository.delete(patientRepository.findByUsername(username));
     }
+
+
 }
