@@ -41,7 +41,7 @@ public class Patient implements Serializable {
     private String lastName;
 
     @NotNull
-    @Size(min = 3, max = 20)
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     @Column(unique = true, nullable = false)
     private String username;
 

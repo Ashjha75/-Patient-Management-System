@@ -60,7 +60,7 @@ public class SecurityConfig {
                 .successHandler(oauth2SuccessHandler)
                 // ✅ The redirectionEndpoint is now correctly placed inside the lambda
                 .redirectionEndpoint(endpoint ->
-                        endpoint.baseUri("/api/v1/login/oauth2/*")
+                        endpoint.baseUri("/login/oauth2/code/*")
                 )
         );
         return http.build();
