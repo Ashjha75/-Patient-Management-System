@@ -1,9 +1,5 @@
 package com.patientmanagement.patientservice.util;
 
-import com.patientmanagement.patientservice.dto.PatientRequestDto;
-import com.patientmanagement.patientservice.model.Patient;
-
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class IsValidEmail {
@@ -24,18 +20,18 @@ public class IsValidEmail {
     /**
      * Example usage in service method.
      */
-    public void updatePatientEmail(Patient patient, PatientRequestDto patientRequestDto) {
-        String newEmail = patientRequestDto.getEmail();
-
-        if (!isValidEmail(newEmail)) {
-            throw new IllegalArgumentException("Invalid email format");
-        }
-
-        // Compare once, using trimmed
-        String trimmedEmail = newEmail.trim();
-        if (!Objects.equals(patient.getEmail(), trimmedEmail)) {
-            // Perform uniqueness check in DB
-        }
-    }
+//    public void updatePatientEmail(Patient patient, PatientRequestDto patientRequestDto) {
+//        String newEmail = patientRequestDto.getEmail();
+//
+//        if (!isValidEmail(newEmail)) {
+//            throw new IllegalArgumentException("Invalid email format");
+//        }
+//
+//        // Compare once, using trimmed
+//        String trimmedEmail = newEmail.trim();
+//        if (!Objects.equals(patient.getEmail(), trimmedEmail)) {
+//            // Perform uniqueness check in DB
+//        }
+//    }
 
 }

@@ -3,11 +3,11 @@ package com.patientmanagement.patientservice.grpc;
 import billing.BillingRequest;
 import billing.BillingResponse;
 import billing.BillingServiceGrpc;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 
 @Slf4j
 @Service
@@ -28,7 +28,7 @@ public class BillingServiceGrpcClient {
 
     }
 
-    public BillingResponse createBillingAccount(String patientId, String name, String email) {
+    public BillingResponse createBillingAccount(String name, String email) {
 
         BillingRequest request = BillingRequest.newBuilder().setName(name).setEmail(email).build();
 
