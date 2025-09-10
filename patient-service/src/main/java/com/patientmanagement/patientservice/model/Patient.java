@@ -2,7 +2,6 @@ package com.patientmanagement.patientservice.model;
 
 import com.patientmanagement.patientservice.util.enums.Gender;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -46,10 +45,6 @@ public class Patient implements Serializable {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @NotNull
-    @Email(message = "Please provide correct email")
-    @Column(unique = true, nullable = false)
-    private String email;
 
     @NotNull
     @Column(nullable = false)
@@ -89,7 +84,7 @@ public class Patient implements Serializable {
     @OneToOne
     @MapsId
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
-    private transient User user;
+    private User user;
 
     @CreationTimestamp
     @Column(updatable = false)

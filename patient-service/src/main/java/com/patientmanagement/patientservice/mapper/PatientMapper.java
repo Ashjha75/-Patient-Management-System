@@ -23,7 +23,6 @@ public class PatientMapper {
         dto.setFirstName(patient.getFirstName());
         dto.setLastName(patient.getLastName());
         dto.setUsername(patient.getUsername());
-        dto.setEmail(patient.getEmail());
         dto.setDateOfBirth(patient.getDateOfBirth());
         dto.setGender(patient.getGender().name());
         dto.setAddressLine1(patient.getAddressLine1());
