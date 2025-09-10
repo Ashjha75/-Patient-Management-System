@@ -48,7 +48,29 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable).cors(cors -> cors.configurationSource(corsConfigurationSource())).exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler)).sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/api/public/**", "/api/v1/docs/**").permitAll().requestMatchers("/v3/api-docs/**", "/api/v1/swagger-ui/**", "/api/v1/swagger-ui.html", "/api/v1/swagger-resources/**", "/webjars/**").permitAll().requestMatchers("/health", "/favicon.ico").permitAll().requestMatchers("/api/v1/login", "/api/v1/login/google", "/api/v1/login/github", "/oauth2/**", "/login/oauth2/**", "/api/v1/login/oauth2/**").permitAll().anyRequest().authenticated()).headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
+        http.csrf(AbstractHttpConfigurer::disable).cors(cors -> cors.configurationSource(corsConfigurationSource())).exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler)).sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/patient/**").hasRole("ADMIN")
+                .requestMatchers(
+                        "/api/auth/**",
+                        "/api/v1/auth/**",
+                        "/api/public/**",
+                        "/api/v1/docs/**",
+                        "/v3/api-docs/**",
+                        "/api/v1/swagger-ui/**",
+                        "/api/v1/swagger-ui.html",
+                        "/api/v1/swagger-resources/**",
+                        "/webjars/**",
+                        "/health",
+                        "/favicon.ico",
+                        "/api/v1/login",
+                        "/api/v1/login/google",
+                        "/api/v1/login/github",
+                        "/oauth2/**",
+                        "/login/oauth2/**",
+                        "/api/v1/login/oauth2/**"
+                ).permitAll()
+                .anyRequest().authenticated()
+        ).headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 
         http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
 
