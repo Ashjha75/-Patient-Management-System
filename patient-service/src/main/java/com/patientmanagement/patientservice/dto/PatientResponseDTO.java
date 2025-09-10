@@ -10,7 +10,6 @@ public class PatientResponseDTO {
     private String firstName;
     private String lastName;
     private String username;
-    private String email;
     private LocalDate dateOfBirth;
     private String gender;
     private String addressLine1;

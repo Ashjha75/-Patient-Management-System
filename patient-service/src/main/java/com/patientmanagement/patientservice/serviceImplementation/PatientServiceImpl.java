@@ -9,6 +9,7 @@ import com.patientmanagement.patientservice.exception.ResourceNotFound;
 import com.patientmanagement.patientservice.grpc.BillingServiceGrpcClient;
 import com.patientmanagement.patientservice.mapper.PatientMapper;
 import com.patientmanagement.patientservice.model.Patient;
+import com.patientmanagement.patientservice.model.User;
 import com.patientmanagement.patientservice.repository.PatientRepository;
 import com.patientmanagement.patientservice.repository.UserRepository;
 import com.patientmanagement.patientservice.service.PatientService;
@@ -62,36 +63,37 @@ public class PatientServiceImpl implements PatientService {
     @Transactional
     public PatientResponseDTO completePatientProfile(PatientRequestDto patientRequestDto) {
         // 1. Validate username/email uniqueness
-        if (!userRepository.existsByUsername(patientRequestDto.getUsername())) {
-            throw new ResourceNotFound("User", "username", patientRequestDto.getUsername());
-        }
+        User user = userRepository.findByUsername(patientRequestDto.getUsername()).orElseThrow(() -> new ResourceNotFound("User", "username", patientRequestDto.getUsername()));
+
         // 2. Check if patient already exists for this username
         if (patientRepository.existsByUsername(patientRequestDto.getUsername())) {
             throw new ApiException("Patient profile already exists for this user");
         }
-        // 2. Generate patient ID
+
+        // 3. Generate patient ID
         String patientId = IdGenerator.generatePatientId();
 
-        // 3. Set default profile image if none provided
+        // 4. Set default profile image if none provided
         if (patientRequestDto.getUserImage() == null || patientRequestDto.getUserImage().trim().isEmpty()) {
             patientRequestDto.setUserImage("https://dummyimage.com/400x400/cccccc/000000.png&text=Profile");
         }
 
-        // 4. Ensure registrationDate is set (default to today if not provided)
+        // 5. Ensure registrationDate is set (default to today if not provided)
         if (patientRequestDto.getRegistrationDate() == null) {
             patientRequestDto.setRegistrationDate(LocalDate.now());
         }
 
-        // 5. Map DTO -> Entity
+        // 6. Map DTO -> Entity
         Patient patient = PatientMapper.toModel(patientRequestDto, patientId);
+        patient.setUser(user); // Set the User entity
 
-        // 6. Save patient
+        // 7. Save patient
         Patient savedPatient = patientRepository.save(patient);
 
-        // 7. Create billing account
-        billingServiceGrpcClient.createBillingAccount(savedPatient.getFirstName(), savedPatient.getEmail());
+        // 8. Create billing account
+//        billingServiceGrpcClient.createBillingAccount(user.getUsername(), user.getEmail());
 
-        // 8. Return DTO
+        // 9. Return DTO
         return PatientMapper.toDTO(savedPatient);
     }
 
