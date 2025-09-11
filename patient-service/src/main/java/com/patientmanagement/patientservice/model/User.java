@@ -14,7 +14,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users",
@@ -81,10 +80,31 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.getRoleName()))
-                .collect(Collectors.toSet());
-    }
+        Set<GrantedAuthority> authorities = new HashSet<>();
 
+        // 1. Add the roles themselves (e.g., "ROLE_ADMIN"), which can still be useful.
+        for (Role role : this.roles) {
+            authorities.add(new SimpleGrantedAuthority(role.getRoleName()));
+        }
+
+        // 2. Add the specific permissions derived from the roles.
+        // This is the core of the dynamic RBAC system.
+        this.roles.stream()
+                // Go into each role
+                .flatMap(role -> role.getPermissions().stream())
+                // For each RolePermission mapping...
+                .forEach(rolePermission -> {
+                    // Get the module key (e.g., "PATIENT")
+                    String moduleKey = rolePermission.getModule().getModuleKey();
+                    // Get the granted permissions (e.g., CREATE, VIEW)
+                    rolePermission.getGrantedPermissions().forEach(permission -> {
+                        // Create the final permission string and add it as an authority
+                        authorities.add(new SimpleGrantedAuthority(moduleKey + ":" + permission.name()));
+                    });
+                });
+
+        return authorities;
+    }
+    
 
 }
