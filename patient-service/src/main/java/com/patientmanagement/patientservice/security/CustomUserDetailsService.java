@@ -35,7 +35,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     //    @CacheEvict(value = "userDetails", key = "#user.username")
 //  use evict to remove cache in update user when role and data changes to not provide satle info
     @Override
-    @Cacheable("userDetails")
+    // This annotation now tells Spring to use Redis!
+    @Cacheable(value = "userPermissions", key = "#username")
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
