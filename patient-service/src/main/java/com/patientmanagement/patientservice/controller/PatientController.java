@@ -26,21 +26,11 @@ public class PatientController {
     }
 
     /**
-     * <b>Security Rule:</b> This endpoint is protected by a dynamic permission check using the
-     * {@code @PreAuthorize} annotation. The expression must evaluate to true for access.
-     * <p>
-     * Expression Breakdown:
-     * {@code "@permissionService.hasPermission(authentication, 'PATIENT_MANAGEMENT', 'LIST') and @permissionService.hasPermission(authentication, 'PATIENT_MANAGEMENT', 'VIEW')"}
-     * <ul>
-     * <li><b>{@code @permissionService}</b>: Calls our custom security bean to check permissions.</li>
-     * <li><b>{@code authentication}</b>: The security context of the currently logged-in user.</li>
-     * <li><b>{@code 'PATIENT_MANAGEMENT'}</b>: The specific module key being checked against.</li>
-     * <li><b>{@code 'LIST'} and {@code 'VIEW'}</b>: The specific permissions required. The 'and' operator ensures the user must have both.</li>
-     * </ul>
-     * Access is granted only if the user's role has both permissions for the specified module.
+     * <b>Security Rule:</b> Access is granted if the authenticated user has the
+     * 'PATIENT_MANAGEMENT:VIEW' authority. This permission is derived from the user's
+     * roles and their associated permissions stored in the database.
      */
-
-    @PreAuthorize("@permissionService.hasPermission(authentication, 'PATIENT_MANAGEMENT', 'LIST') and @permissionService.hasPermission(authentication, 'PATIENT_MANAGEMENT', 'VIEW')")
+    @PreAuthorize("hasAuthority('PATIENT_MANAGEMENT:VIEW')")
     @GetMapping("/all-patients")
     public ResponseEntity<PatientPageResponseDTO> getAllPatients(
             @RequestParam(value = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
@@ -49,15 +39,24 @@ public class PatientController {
             @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_DIR, required = false) String sortOrder) {
         PatientPageResponseDTO patients = patientService.getAllPatients(pageNumber, pageSize, sortBy, sortOrder);
         return ResponseEntity.ok(patients);
-
     }
 
+    /**
+     * <b>Security Rule:</b> Access is granted if the authenticated user has the
+     * 'PATIENT_MANAGEMENT:CREATE' authority.
+     */
+    @PreAuthorize("hasAuthority('PATIENT_MANAGEMENT:CREATE')")
     @PostMapping("/add-patient")
     public ResponseEntity<PatientResponseDTO> addPatient(@Validated({Default.class, CreatePatientValidationGroup.class}) @RequestBody PatientRequestDto patientRequestDto) {
         PatientResponseDTO responseDto = patientService.completePatientProfile(patientRequestDto);
         return ResponseEntity.status(201).body(responseDto);
     }
 
+    /**
+     * <b>Security Rule:</b> Access is granted if the authenticated user has the
+     * 'PATIENT_MANAGEMENT:EDIT' authority.
+     */
+    @PreAuthorize("hasAuthority('PATIENT_MANAGEMENT:EDIT')")
     @PutMapping("/edit-patient")
     public ResponseEntity<PatientResponseDTO> editPatient(@Validated(Default.class)
                                                           @RequestParam(name = "username") String username,
@@ -67,6 +66,11 @@ public class PatientController {
         return ResponseEntity.ok(responseDto);
     }
 
+    /**
+     * <b>Security Rule:</b> Access is granted if the authenticated user has the
+     * 'PATIENT_MANAGEMENT:VIEW' authority.
+     */
+    @PreAuthorize("hasAuthority('PATIENT_MANAGEMENT:VIEW')")
     @GetMapping("/get-patient/{patientusername}")
     public ResponseEntity<PatientResponseDTO> getPatientById(@PathVariable("patientusername") String patientusername) {
 
@@ -74,6 +78,12 @@ public class PatientController {
         return ResponseEntity.ok(patient);
     }
 
+    /**
+     * <b>Security Rule:</b> Access is granted if the authenticated user has the
+     * 'PATIENT_MANAGEMENT:DELETE' authority. For critical operations, this can be
+     * combined with role checks, e.g., "hasAuthority('ROLE_ADMIN') or hasAuthority('PATIENT_MANAGEMENT:DELETE')".
+     */
+    @PreAuthorize("hasAuthority('PATIENT_MANAGEMENT:DELETE')")
     @DeleteMapping("/delete-patient/{patientusername}")
     public ResponseEntity<PatientResponseDTO> deletePatient(@PathVariable("patientusername") String patientusername) {
 
