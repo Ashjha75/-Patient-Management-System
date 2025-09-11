@@ -129,34 +129,16 @@ VALUES ((SELECT user_id FROM users WHERE username = 'superadmin'),
         (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST'));
 
 -- ====================================================================================
--- STEP 5: ASSIGNING DYNAMIC PERMISSIONS TO ROLES
+-- STEP 5: ASSIGNING DYNAMIC PERMISSIONS TO ROLES (Updated)
 -- ====================================================================================
 
--- Grant 'ROLE_RECEPTIONIST' permissions for 'Patient Management'
-INSERT INTO role_permissions (role_id, module_id)
-VALUES ((SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST'),
-        (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT'));
-
-INSERT INTO granted_permissions (role_permission_id, permission)
-VALUES ((SELECT id
-         FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST')
-           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'CREATE'),
-       ((SELECT id
-         FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST')
-           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'VIEW'),
-       ((SELECT id
-         FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST')
-           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'EDIT');
-
--- Grant 'ROLE_ADMIN' ALL permissions for ALL modules
--- For Patient Management
+-- Grant 'ROLE_ADMIN' FULL permissions for the 'Patient Management' module
+-- 1. Create the link between the role and the module
 INSERT INTO role_permissions (role_id, module_id)
 VALUES ((SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN'),
         (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT'));
 
+-- 2. Grant all permissions for that link
 INSERT INTO granted_permissions (role_permission_id, permission)
 VALUES ((SELECT id
          FROM role_permissions
@@ -179,7 +161,45 @@ VALUES ((SELECT id
          WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN')
            AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'LIST');
 
--- Repeat for other modules as needed...
+
+-- Grant 'ROLE_PATIENT' specific permissions for 'Patient Management'
+-- 1. Create the link between the role and the module
+INSERT INTO role_permissions (role_id, module_id)
+VALUES ((SELECT role_id FROM roles WHERE role_name = 'ROLE_PATIENT'),
+        (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT'));
+
+-- 2. Grant VIEW and EDIT permissions for that link
+INSERT INTO granted_permissions (role_permission_id, permission)
+VALUES ((SELECT id
+         FROM role_permissions
+         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_PATIENT')
+           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'VIEW'),
+       ((SELECT id
+         FROM role_permissions
+         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_PATIENT')
+           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'EDIT');
+
+
+-- Grant 'ROLE_RECEPTIONIST' permissions for 'Patient Management'
+-- 1. Create the link between the role and the module
+INSERT INTO role_permissions (role_id, module_id)
+VALUES ((SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST'),
+        (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT'));
+
+-- 2. Grant CREATE, VIEW, and EDIT permissions for that link
+INSERT INTO granted_permissions (role_permission_id, permission)
+VALUES ((SELECT id
+         FROM role_permissions
+         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST')
+           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'CREATE'),
+       ((SELECT id
+         FROM role_permissions
+         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST')
+           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'VIEW'),
+       ((SELECT id
+         FROM role_permissions
+         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST')
+           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'EDIT');
 
 -- ====================================================================================
 -- STEP 6: Insert data into the child table (patients)
