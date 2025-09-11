@@ -110,11 +110,11 @@ public class SecurityConfig {
             Module userModule = createModuleIfNotFound(moduleRepository, "User Management", "USER_MANAGEMENT", "/api/users");
 
             // 2. Create Roles and grant them Permissions
-            Role patientRole = createRoleAndAssignPermissions(roleRepository, rolePermissionRepository, "PATIENT", patientModule,
+            Role patientRole = createRoleAndAssignPermissions(roleRepository, rolePermissionRepository, "ROLE_PATIENT", patientModule,
                     // A patient can only VIEW their own data (controller logic will enforce 'own')
                     Set.of(Permission.VIEW));
 
-            Role superAdminRole = createRoleAndAssignPermissions(roleRepository, rolePermissionRepository, "SUPER_ADMIN", patientModule,
+            Role superAdminRole = createRoleAndAssignPermissions(roleRepository, rolePermissionRepository, "ROLE_ADMIN", patientModule,
                     // Admin gets all permissions for the patient module
                     Set.of(Permission.CREATE, Permission.VIEW, Permission.EDIT, Permission.DELETE, Permission.LIST));
             // Also give admin rights to user management
@@ -122,14 +122,14 @@ public class SecurityConfig {
 
 
             // 3. Create Users and assign them Roles
-            if (userRepository.findByUsername("johndoe").isEmpty()) {
-                User patientUser = new User("johndoe", passwordEncoder.encode("password123"), "john.doe@example.com");
+            if (userRepository.findByUsername("johndoe2").isEmpty()) {
+                User patientUser = new User("johndoe2", passwordEncoder.encode("password123"), "john.doe@example.com");
                 patientUser.setRoles(Set.of(patientRole));
                 userRepository.save(patientUser);
             }
 
-            if (userRepository.findByUsername("superadmin").isEmpty()) {
-                User adminUser = new User("superadmin", passwordEncoder.encode("adminpass"), "admin@example.com");
+            if (userRepository.findByUsername("superadmin2").isEmpty()) {
+                User adminUser = new User("superadmin2", passwordEncoder.encode("adminpass"), "admin@example.com");
                 adminUser.setRoles(Set.of(superAdminRole));
                 userRepository.save(adminUser);
             }

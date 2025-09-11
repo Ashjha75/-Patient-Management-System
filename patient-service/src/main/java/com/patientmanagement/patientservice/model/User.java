@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,6 +29,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@Slf4j
 public class User implements UserDetails {
 
     @Id
@@ -78,33 +80,40 @@ public class User implements UserDetails {
         this.username = username;
     }
 
+// In your com.patientmanagement.patientservice.model.User class
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities = new HashSet<>();
 
-        // 1. Add the roles themselves (e.g., "ROLE_ADMIN"), which can still be useful.
+        // 1. Add the roles themselves (e.g., "ROLE_PATIENT").
+        // It's good practice to prefix roles with 'ROLE_' if you plan to use hasRole() checks.
         for (Role role : this.roles) {
-            authorities.add(new SimpleGrantedAuthority(role.getRoleName()));
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleName())); // e.g., ROLE_PATIENT
         }
 
         // 2. Add the specific permissions derived from the roles.
-        // This is the core of the dynamic RBAC system.
+        // This is the part that is currently missing or not working.
         this.roles.stream()
                 // Go into each role
                 .flatMap(role -> role.getPermissions().stream())
                 // For each RolePermission mapping...
                 .forEach(rolePermission -> {
-                    // Get the module key (e.g., "PATIENT")
+                    // Get the module key (e.g., "PATIENT_MANAGEMENT")
                     String moduleKey = rolePermission.getModule().getModuleKey();
                     // Get the granted permissions (e.g., CREATE, VIEW)
                     rolePermission.getGrantedPermissions().forEach(permission -> {
-                        // Create the final permission string and add it as an authority
+                        // Create the final permission string (e.g., "PATIENT_MANAGEMENT:VIEW")
                         authorities.add(new SimpleGrantedAuthority(moduleKey + ":" + permission.name()));
                     });
                 });
 
+        log.info("--- GENERATED AUTHORITIES for user '{}' ---", this.getUsername());
+        log.info(authorities.toString());
+        log.info("---------------------------------------------------------");
+
         return authorities;
     }
-    
+
 
 }
