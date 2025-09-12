@@ -82,38 +82,34 @@ public class User implements UserDetails {
 
 // In your com.patientmanagement.patientservice.model.User class
 
+    // In your com.patientmanagement.patientservice.model.User class
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities = new HashSet<>();
 
-        // 1. Add the roles themselves (e.g., "ROLE_PATIENT").
-        // It's good practice to prefix roles with 'ROLE_' if you plan to use hasRole() checks.
-        for (Role role : this.roles) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleName())); // e.g., ROLE_PATIENT
+        // We still add the basic roles from the database
+        if (this.roles != null) {
+            for (Role role : this.roles) {
+                authorities.add(new SimpleGrantedAuthority(role.getRoleName()));
+            }
         }
 
-        // 2. Add the specific permissions derived from the roles.
-        // This is the part that is currently missing or not working.
-        this.roles.stream()
-                // Go into each role
-                .flatMap(role -> role.getPermissions().stream())
-                // For each RolePermission mapping...
-                .forEach(rolePermission -> {
-                    // Get the module key (e.g., "PATIENT_MANAGEMENT")
-                    String moduleKey = rolePermission.getModule().getModuleKey();
-                    // Get the granted permissions (e.g., CREATE, VIEW)
-                    rolePermission.getGrantedPermissions().forEach(permission -> {
-                        // Create the final permission string (e.g., "PATIENT_MANAGEMENT:VIEW")
-                        authorities.add(new SimpleGrantedAuthority(moduleKey + ":" + permission.name()));
-                    });
-                });
+        // ======================= TEMPORARY DEBUGGING TEST =======================
+        // This block will manually add permissions for the 'superadmin' user
+        // to see if the @PreAuthorize check itself works.
+        if (this.getUsername().equals("superadmin")) {
+            System.out.println("--- DEBUG: HARDCODING PERMISSIONS FOR 'superadmin' ---");
+            authorities.add(new SimpleGrantedAuthority("PATIENT_MANAGEMENT:VIEW"));
+            authorities.add(new SimpleGrantedAuthority("PATIENT_MANAGEMENT:CREATE"));
+            authorities.add(new SimpleGrantedAuthority("PATIENT_MANAGEMENT:EDIT"));
+            authorities.add(new SimpleGrantedAuthority("PATIENT_MANAGEMENT:DELETE"));
+        }
+        // ===================== END OF TEMPORARY DEBUGGING TEST =====================
 
-        log.info("--- GENERATED AUTHORITIES for user '{}' ---", this.getUsername());
-        log.info(authorities.toString());
-        log.info("---------------------------------------------------------");
+        System.out.println("--- Final generated authorities for user '" + this.getUsername() + "': " + authorities);
 
         return authorities;
     }
-
-
 }
+

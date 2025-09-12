@@ -112,10 +112,10 @@ VALUES ('ROLE_ADMIN'),
 
 -- Insert Users
 INSERT INTO users (username, password, email)
-VALUES ('superadmin', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD', 'admin@example.com'),
-       ('johndoe', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD', 'john.doe@example.com'),
-       ('janesmith', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD', 'jane.smith@example.com'),
-       ('frontdesk', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD', 'frontdesk@clinic.com');
+VALUES ('superadmin', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD', 'admin2@example.com'),
+       ('johndoe', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD', 'john2.doe@example.com'),
+       ('janesmith', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD', 'jane2.smith@example.com'),
+       ('frontdesk', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD', 'frontde2sk@clinic.com');
 
 -- Assign Roles to Users
 INSERT INTO user_roles (user_id, role_id)
