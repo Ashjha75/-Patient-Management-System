@@ -1,4 +1,4 @@
--- For a clean start, drop tables in reverse order of dependency
+-- For a clean development start, drop tables in reverse order of dependency
 DROP TABLE IF EXISTS granted_permissions;
 DROP TABLE IF EXISTS role_permissions;
 DROP TABLE IF EXISTS modules;
@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS roles;
 
 -- ====================================================================================
--- STEP 1: CORE USER AND ROLE TABLES
+-- STEP 1: CREATE TABLES (Your schema is correct, no changes needed here)
 -- ====================================================================================
 
 CREATE TABLE IF NOT EXISTS users
@@ -37,10 +37,6 @@ CREATE TABLE IF NOT EXISTS user_roles
     FOREIGN KEY (role_id) REFERENCES roles (role_id) ON DELETE CASCADE
 );
 
--- ====================================================================================
--- STEP 2: NEW DYNAMIC PERMISSION TABLES (MODULE, ROLE_PERMISSIONS, GRANTED_PERMISSIONS)
--- ====================================================================================
-
 CREATE TABLE IF NOT EXISTS modules
 (
     id          BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -67,10 +63,6 @@ CREATE TABLE IF NOT EXISTS granted_permissions
     FOREIGN KEY (role_permission_id) REFERENCES role_permissions (id) ON DELETE CASCADE
 );
 
--- ====================================================================================
--- STEP 3: APPLICATION-SPECIFIC TABLES (e.g., Patients)
--- ====================================================================================
-
 CREATE TABLE IF NOT EXISTS patients
 (
     id                VARCHAR(20) PRIMARY KEY,
@@ -93,125 +85,116 @@ CREATE TABLE IF NOT EXISTS patients
     FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );
 
+
 -- ====================================================================================
--- STEP 4: INSERTING SAMPLE DATA
+-- STEP 2: INSERT CORE DATA (Modules, Roles, Users)
 -- ====================================================================================
 
--- Insert Modules
+-- Insert Modules (The "what" can be controlled)
 INSERT INTO modules (module_name, module_key, url_path)
-VALUES ('Patient Management', 'PATIENT_MANAGEMENT', '/api/patients'),
-       ('User Management', 'USER_MANAGEMENT', '/api/users'),
-       ('Role Management', 'ROLE_MANAGEMENT', '/api/roles');
+VALUES ('Patient Management', 'PATIENT_MANAGEMENT', '/api/v1/patients'),
+       ('User Management', 'USER_MANAGEMENT', '/api/v1/users'),
+       ('Role Management', 'ROLE_MANAGEMENT', '/api/v1/roles');
 
--- Insert Roles
+-- Insert Roles (The "who" or job function)
 INSERT INTO roles (role_name)
 VALUES ('ROLE_ADMIN'),
-       ('ROLE_USER'),
        ('ROLE_PATIENT'),
        ('ROLE_RECEPTIONIST');
 
--- Insert Users
-INSERT INTO users (username, password, email)
-VALUES ('superadmin', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD', 'admin2@example.com'),
-       ('johndoe', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD', 'john2.doe@example.com'),
-       ('janesmith', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD', 'jane2.smith@example.com'),
-       ('frontdesk', '$2a$10$pS.m2gDna3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD.z8a3aD', 'frontde2sk@clinic.com');
+-- Insert Users (The individuals)
+-- This Bcrypt hash is for the password 'password'
+INSERT INTO users (username, password, email, enabled)
+VALUES ('superadmin', '$2a$10$GRL1P5C5nOaB1aez1dG/NOXmEdx8kKk0iH9.G5HD3D8b2Yg3.8R/q', 'superadmin@clinic.com', true),
+       ('janesmith', '$2a$10$GRL1P5C5nOaB1aez1dG/NOXmEdx8kKk0iH9.G5HD3D8b2Yg3.8R/q', 'jane.smith@example.com', true),
+       ('frontdesk', '$2a$10$GRL1P5C5nOaB1aez1dG/NOXmEdx8kKk0iH9.G5HD3D8b2Yg3.8R/q', 'frontdesk@clinic.com', true);
 
 -- Assign Roles to Users
 INSERT INTO user_roles (user_id, role_id)
 VALUES ((SELECT user_id FROM users WHERE username = 'superadmin'),
         (SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN')),
-       ((SELECT user_id FROM users WHERE username = 'johndoe'),
-        (SELECT role_id FROM roles WHERE role_name = 'ROLE_USER')),
        ((SELECT user_id FROM users WHERE username = 'janesmith'),
         (SELECT role_id FROM roles WHERE role_name = 'ROLE_PATIENT')),
        ((SELECT user_id FROM users WHERE username = 'frontdesk'),
         (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST'));
 
+
 -- ====================================================================================
--- STEP 5: ASSIGNING DYNAMIC PERMISSIONS TO ROLES (Updated)
+-- STEP 3: LINK ROLES TO MODULES
 -- ====================================================================================
 
--- Grant 'ROLE_ADMIN' FULL permissions for the 'Patient Management' module
--- 1. Create the link between the role and the module
+-- The ADMIN role has permissions related to ALL modules.
 INSERT INTO role_permissions (role_id, module_id)
 VALUES ((SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN'),
-        (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT'));
+        (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')),
+       ((SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN'),
+        (SELECT id FROM modules WHERE module_key = 'USER_MANAGEMENT')),
+       ((SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN'),
+        (SELECT id FROM modules WHERE module_key = 'ROLE_MANAGEMENT'));
 
--- 2. Grant all permissions for that link
-INSERT INTO granted_permissions (role_permission_id, permission)
-VALUES ((SELECT id
-         FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN')
-           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'CREATE'),
-       ((SELECT id
-         FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN')
-           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'VIEW'),
-       ((SELECT id
-         FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN')
-           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'EDIT'),
-       ((SELECT id
-         FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN')
-           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'DELETE'),
-       ((SELECT id
-         FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN')
-           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'LIST');
-
-
--- Grant 'ROLE_PATIENT' specific permissions for 'Patient Management'
--- 1. Create the link between the role and the module
-INSERT INTO role_permissions (role_id, module_id)
-VALUES ((SELECT role_id FROM roles WHERE role_name = 'ROLE_PATIENT'),
-        (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT'));
-
--- 2. Grant VIEW and EDIT permissions for that link
-INSERT INTO granted_permissions (role_permission_id, permission)
-VALUES ((SELECT id
-         FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_PATIENT')
-           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'VIEW'),
-       ((SELECT id
-         FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_PATIENT')
-           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'EDIT');
-
-
--- Grant 'ROLE_RECEPTIONIST' permissions for 'Patient Management'
--- 1. Create the link between the role and the module
+-- The RECEPTIONIST and PATIENT roles have permissions ONLY for the Patient Management module.
 INSERT INTO role_permissions (role_id, module_id)
 VALUES ((SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST'),
+        (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')),
+       ((SELECT role_id FROM roles WHERE role_name = 'ROLE_PATIENT'),
         (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT'));
 
--- 2. Grant CREATE, VIEW, and EDIT permissions for that link
-INSERT INTO granted_permissions (role_permission_id, permission)
-VALUES ((SELECT id
-         FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST')
-           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'CREATE'),
-       ((SELECT id
-         FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST')
-           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'VIEW'),
-       ((SELECT id
-         FROM role_permissions
-         WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST')
-           AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT')), 'EDIT');
 
 -- ====================================================================================
--- STEP 6: Insert data into the child table (patients)
+-- STEP 4: GRANT PERMISSION *ACTIONS* TO EACH ROLE-MODULE LINK
+-- ====================================================================================
+
+-- Get the ID for the Admin's link to the Patient Management module
+SET @admin_patient_perm_id = (SELECT id
+                              FROM role_permissions
+                              WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_ADMIN')
+                                AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT'));
+
+-- Grant ADMIN full control over Patient Management
+-- **CORRECTED**: We only insert the ACTION here. The Java code will prepend "PATIENT_MANAGEMENT:".
+INSERT INTO granted_permissions (role_permission_id, permission)
+VALUES (@admin_patient_perm_id, 'CREATE'),
+       (@admin_patient_perm_id, 'VIEW'),
+       (@admin_patient_perm_id, 'EDIT'),
+       (@admin_patient_perm_id, 'DELETE'),
+       (@admin_patient_perm_id, 'LIST');
+
+
+-- Get the ID for the Receptionist's link to the Patient Management module
+SET @receptionist_patient_perm_id = (SELECT id
+                                     FROM role_permissions
+                                     WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_RECEPTIONIST')
+                                       AND
+                                         module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT'));
+
+-- Grant RECEPTIONIST limited control over Patient Management (No Delete)
+-- **CORRECTED**: Only the action is stored.
+INSERT INTO granted_permissions (role_permission_id, permission)
+VALUES (@receptionist_patient_perm_id, 'CREATE'),
+       (@receptionist_patient_perm_id, 'VIEW'),
+       (@receptionist_patient_perm_id, 'EDIT'),
+       (@receptionist_patient_perm_id, 'LIST');
+
+
+-- Get the ID for the Patient's link to the Patient Management module
+SET @patient_perm_id = (SELECT id
+                        FROM role_permissions
+                        WHERE role_id = (SELECT role_id FROM roles WHERE role_name = 'ROLE_PATIENT')
+                          AND module_id = (SELECT id FROM modules WHERE module_key = 'PATIENT_MANAGEMENT'));
+
+-- Grant PATIENT very limited, self-service control.
+-- **CORRECTED**: Only the action is stored.
+INSERT INTO granted_permissions (role_permission_id, permission)
+VALUES (@patient_perm_id, 'VIEW_OWN'),
+       (@patient_perm_id, 'EDIT_OWN');
+
+
+-- ====================================================================================
+-- STEP 5: Insert application-specific data
 -- ====================================================================================
 
 INSERT INTO patients (id, first_name, last_name, username, email, date_of_birth, gender, address_line1, city, state,
                       country, postal_code, registration_date, user_id, created_at, updated_at)
-VALUES ('A1b2C3d4E5f6G7', 'John', 'Doe', 'johndoe', 'john.doe@example.com', '1985-06-15', 'MALE', '123 Main St',
-        'Springfield', 'Illinois', 'USA', '62701', '2024-01-10',
-        (SELECT user_id FROM users WHERE username = 'johndoe'),
-        NOW(), NOW()),
-       ('H8i9J0k1L2m3N4', 'Jane', 'Smith', 'janesmith', 'jane.smith@example.com', '1990-09-23', 'FEMALE', '456 Elm St',
-        'Shelbyville', 'Illinois', 'USA', '62565', '2023-12-01',
-        (SELECT user_id FROM users WHERE username = 'janesmith'),
+VALUES ('PAT0001', 'Jane', 'Smith', 'janesmith', 'jane.smith@example.com', '1990-09-23', 'FEMALE', '456 Elm St',
+        'Shelbyville', 'Illinois', 'USA', '62565', CURDATE(), (SELECT user_id FROM users WHERE username = 'janesmith'),
         NOW(), NOW());

@@ -19,7 +19,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email);
 
-    @Query("SELECT u FROM User u " + "LEFT JOIN FETCH u.roles r " + "LEFT JOIN FETCH r.permissions p " + "LEFT JOIN FETCH p.module " + "WHERE u.username = :username")
+    //    @Query("SELECT u FROM User u " + "LEFT JOIN FETCH u.roles r " + "LEFT JOIN FETCH r.permissions p " + "LEFT JOIN FETCH p.module " + "WHERE u.username = :username")
+//    Optional<User> findByUsernameWithRolesAndPermissions(@Param("username") String username);
+    @Query("SELECT u FROM User u JOIN FETCH u.roles r JOIN FETCH r.permissions WHERE u.username = :username")
     Optional<User> findByUsernameWithRolesAndPermissions(@Param("username") String username);
 
     Optional<User> findByProviderIdAndProviderType(String providerId, AuthProviderType authProviderType);
