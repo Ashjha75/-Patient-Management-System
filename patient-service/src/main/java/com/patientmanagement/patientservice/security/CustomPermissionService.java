@@ -78,7 +78,7 @@ public class CustomPermissionService {
         // 4. Use Java Streams to check for the permission in a declarative way.
         boolean isPermitted = user.getRoles().stream()
                 // Get a stream of all RolePermission objects from all roles the user has
-                .flatMap(role -> role.getPermissions().stream())
+                .flatMap(role -> role.getRolePermissions().stream())
                 // Find a match where the module key and the required permission are present
                 .anyMatch(rolePermission ->
                         rolePermission.getModule().getModuleKey().equalsIgnoreCase(moduleKey) &&
