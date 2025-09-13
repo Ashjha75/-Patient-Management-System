@@ -1,5 +1,6 @@
 package com.patientmanagement.patientservice.security;
 
+import com.patientmanagement.patientservice.model.Module;
 import com.patientmanagement.patientservice.model.Role;
 import com.patientmanagement.patientservice.model.RolePermission;
 import com.patientmanagement.patientservice.model.User;
@@ -46,7 +47,7 @@ public class DataSeeder implements CommandLineRunner {
 
         // 3. Create other Roles and grant them Permissions
         Role patientRole = createRoleAndAssignPermissions("ROLE_PATIENT", patientModule,
-                Set.of(Permission.VIEW_OWN, Permission.EDIT_OWN));
+                Set.of(Permission.VIEW, Permission.EDIT));
 
         Role adminRole = createRoleAndAssignPermissions("ROLE_ADMIN", patientModule,
                 Set.of(Permission.CREATE, Permission.VIEW, Permission.EDIT, Permission.DELETE, Permission.LIST));
