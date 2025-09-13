@@ -32,4 +32,17 @@ public class Role {
     public Role(String roleName) {
         this.roleName = roleName;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Role role)) return false;
+        return roleName != null && roleName.equals(role.roleName);
+    }
+
+    @Override
+    public int hashCode() {
+        return roleName != null ? roleName.hashCode() : 0;
+    }
+
 }

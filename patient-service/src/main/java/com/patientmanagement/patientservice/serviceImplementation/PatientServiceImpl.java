@@ -6,11 +6,12 @@ import com.patientmanagement.patientservice.dto.PatientRequestDto;
 import com.patientmanagement.patientservice.dto.PatientResponseDTO;
 import com.patientmanagement.patientservice.exception.ApiException;
 import com.patientmanagement.patientservice.exception.ResourceNotFound;
-import com.patientmanagement.patientservice.grpc.BillingServiceGrpcClient;
 import com.patientmanagement.patientservice.mapper.PatientMapper;
 import com.patientmanagement.patientservice.model.Patient;
+import com.patientmanagement.patientservice.model.Role;
 import com.patientmanagement.patientservice.model.User;
 import com.patientmanagement.patientservice.repository.PatientRepository;
+import com.patientmanagement.patientservice.repository.RoleRepository;
 import com.patientmanagement.patientservice.repository.UserRepository;
 import com.patientmanagement.patientservice.service.PatientService;
 import com.patientmanagement.patientservice.util.IdGenerator;
@@ -33,8 +34,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PatientServiceImpl implements PatientService {
     private final PatientRepository patientRepository;
-    private final BillingServiceGrpcClient billingServiceGrpcClient;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
     @Override
     public PatientPageResponseDTO getAllPatients(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
@@ -62,40 +63,39 @@ public class PatientServiceImpl implements PatientService {
     @Override
     @Transactional
     public PatientResponseDTO completePatientProfile(PatientRequestDto patientRequestDto) {
-        // 1. Validate username/email uniqueness
-        User user = userRepository.findByUsername(patientRequestDto.getUsername()).orElseThrow(() -> new ResourceNotFound("User", "username", patientRequestDto.getUsername()));
+        User user = userRepository.findByUsernameWithAllPermissions(patientRequestDto.getUsername())
+                .orElseThrow(() -> new ResourceNotFound("User", "username", patientRequestDto.getUsername()));
 
-        // 2. Check if patient already exists for this username
         if (patientRepository.existsByUsername(patientRequestDto.getUsername())) {
             throw new ApiException("Patient profile already exists for this user");
         }
 
-        // 3. Generate patient ID
         String patientId = IdGenerator.generatePatientId();
 
-        // 4. Set default profile image if none provided
         if (patientRequestDto.getUserImage() == null || patientRequestDto.getUserImage().trim().isEmpty()) {
             patientRequestDto.setUserImage("https://dummyimage.com/400x400/cccccc/000000.png&text=Profile");
         }
 
-        // 5. Ensure registrationDate is set (default to today if not provided)
         if (patientRequestDto.getRegistrationDate() == null) {
             patientRequestDto.setRegistrationDate(LocalDate.now());
         }
 
-        // 6. Map DTO -> Entity
-        Patient patient = PatientMapper.toModel(patientRequestDto, patientId);
-        patient.setUser(user); // Set the User entity
+        Role patientRole = roleRepository.findByRoleName("ROLE_PATIENT")
+                .orElseThrow(() -> new ApiException("Patient role not found"));
 
-        // 7. Save patient
+        if (!user.getRoles().contains(patientRole)) {
+            user.getRoles().add(patientRole);
+            userRepository.save(user);
+        }
+
+        Patient patient = PatientMapper.toModel(patientRequestDto, patientId);
+        patient.setUser(user);
+
         Patient savedPatient = patientRepository.save(patient);
 
-        // 8. Create billing account
-//        billingServiceGrpcClient.createBillingAccount(user.getUsername(), user.getEmail());
-
-        // 9. Return DTO
         return PatientMapper.toDTO(savedPatient);
     }
+
 
     // Java
     @Override

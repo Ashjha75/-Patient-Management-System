@@ -70,7 +70,7 @@ public class PatientController {
      * <b>Security Rule:</b> Access is granted if the authenticated user has the
      * 'PATIENT_MANAGEMENT:VIEW' authority.
      */
-    @PreAuthorize("hasAuthority('PATIENT_MANAGEMENT:VIEW')")
+    @PreAuthorize("hasAuthority('PATIENT_MANAGEMENT:VIEW or #username == authentication.name ')")
     @GetMapping("/get-patient/{patientusername}")
     public ResponseEntity<PatientResponseDTO> getPatientById(@PathVariable("patientusername") String patientusername) {
 
