@@ -1,8 +1,10 @@
 package com.patientmanagement.patientservice.serviceImplementation;
 
+import com.patientmanagement.patientservice.dto.RefreshTokenRequest;
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
 import com.patientmanagement.patientservice.exception.ApiException;
+import com.patientmanagement.patientservice.exception.TokenRefreshException;
 import com.patientmanagement.patientservice.model.RefreshToken;
 import com.patientmanagement.patientservice.model.Role;
 import com.patientmanagement.patientservice.model.User;
@@ -50,7 +52,6 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
-
 
     @Override
     public ResponseEntity<String> registerUser(UserRequestDto userRequestDto) {
@@ -171,8 +172,25 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ResponseEntity<String> completeProfile(UserRequestDto userRequest) {
-        return null;
+    public UserInfoResponse refreshToken(RefreshTokenRequest request) {
+        String requestRefreshToken = request.refreshToken();
+
+        return iRefreshTokenService.findByToken(requestRefreshToken)
+                .map(iRefreshTokenService::verifyExpiration)
+                .map(RefreshToken::getUser)
+                .map(user -> {
+                    String newAccessToken = jwtUtils.generateTokenFromUsername(user.getUsername());
+                    iRefreshTokenService.deleteByToken(requestRefreshToken);
+                    RefreshToken newRefreshToken = iRefreshTokenService.createRefreshToken(user.getUsername());
+
+                    List<String> roles = user.getRoles().stream()
+                            .map(Role::getRoleName)
+                            .distinct()
+                            .toList();
+
+                    return new UserInfoResponse(newAccessToken, newRefreshToken.getToken(), user.getUsername(), roles);
+                })
+                .orElseThrow(() -> new TokenRefreshException(requestRefreshToken, "Refresh token not found in database!"));
     }
 
 
