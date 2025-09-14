@@ -13,6 +13,7 @@ import com.patientmanagement.patientservice.model.User;
 import com.patientmanagement.patientservice.repository.PatientRepository;
 import com.patientmanagement.patientservice.repository.RoleRepository;
 import com.patientmanagement.patientservice.repository.UserRepository;
+import com.patientmanagement.patientservice.service.FileStorageService;
 import com.patientmanagement.patientservice.service.PatientService;
 import com.patientmanagement.patientservice.util.IdGenerator;
 import com.patientmanagement.patientservice.util.enums.Gender;
@@ -37,6 +38,7 @@ public class PatientServiceImpl implements PatientService {
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final FileStorageService fileStorageService;
 
     @Override
     public PatientPageResponseDTO getAllPatients(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
