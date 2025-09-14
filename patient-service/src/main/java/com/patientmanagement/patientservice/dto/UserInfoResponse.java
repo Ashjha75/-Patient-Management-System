@@ -15,7 +15,7 @@ import java.util.List;
 public class UserInfoResponse {
     //    private Long id;
     private String jwtToken;
-
+    private String refreshToken;
     private String userName;
     private List<String> roles;
 
@@ -25,8 +25,9 @@ public class UserInfoResponse {
         this.jwtToken = jwtToken;
     }
 
-    public UserInfoResponse(Long id, String userName, List<String> roles) {
-//        this.id = id;
+    public UserInfoResponse(String jwtToken, String refreshToken, String userName, List<String> roles) {
+        this.jwtToken = jwtToken;
+        this.refreshToken = refreshToken;
         this.userName = userName;
         this.roles = roles;
     }
