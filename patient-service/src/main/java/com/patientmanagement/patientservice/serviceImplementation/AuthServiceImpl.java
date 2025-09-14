@@ -44,6 +44,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final TokenBlacklistService tokenBlacklistService;
+    private final Refr tokenBlacklistService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
@@ -79,15 +80,15 @@ public class AuthServiceImpl implements AuthService {
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully.");
     }
 
-    @Override
+    Override
     public ResponseEntity<UserInfoResponse> authenticateUser(UserRequestDto userRequest) {
-        String loginInput = userRequest.getUsername(); // username or email
+        String loginInput = userRequest.getUsername(); // Can be username or email
         if (!StringUtils.hasText(loginInput)) {
             log.warn("Authentication failed - Username or email is blank");
             throw new ApiException("Username or email is blank");
         }
 
-        // Normalize: if email, resolve to username
+        // --- Logic to resolve email to username (this part is good, no changes) ---
         String usernameToAuth = loginInput;
         if (loginInput.contains("@")) {
             Optional<User> userOpt = userRepository.findByEmail(loginInput);
@@ -98,6 +99,7 @@ public class AuthServiceImpl implements AuthService {
             usernameToAuth = userOpt.get().getUsername();
         }
 
+        // --- Standard authentication logic (this part is good, no changes) ---
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(usernameToAuth, userRequest.getPassword()));
@@ -108,17 +110,31 @@ public class AuthServiceImpl implements AuthService {
         }
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        // --- Token Generation and Response Construction (THIS PART IS UPDATED) ---
+
+        // 1. Generate the short-lived JWT Access Token
         String jwtToken = jwtUtils.generateTokenFromUsername(userDetails.getUsername());
 
-        List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+        // 2. ✅ Create and persist the long-lived Refresh Token
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
 
-        UserInfoResponse response = new UserInfoResponse(jwtToken, userDetails.getUsername(), roles);
+        // 3. Get the user's roles for the response
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        // 4. ✅ Create the response object containing BOTH tokens
+        UserInfoResponse response = new UserInfoResponse(
+                jwtToken,
+                refreshToken.getToken(), // Pass the refresh token string
+                userDetails.getUsername(),
+                roles
+        );
+
         return ResponseEntity.ok(response);
     }
-
-
     @Override
     public ResponseEntity<Map<String, Object>> logout(HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
