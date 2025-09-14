@@ -1,5 +1,6 @@
 package com.patientmanagement.patientservice.exception;
 
+import java.io.IOException;
 import java.io.Serial;
 
 /**
@@ -50,5 +51,8 @@ public class ApiException extends RuntimeException {
      */
     public ApiException(String message) {
         super(message);
+    }
+
+    public ApiException(String s, IOException e) {
     }
 }
