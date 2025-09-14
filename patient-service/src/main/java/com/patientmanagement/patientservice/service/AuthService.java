@@ -1,5 +1,6 @@
 package com.patientmanagement.patientservice.service;
 
+import com.patientmanagement.patientservice.dto.RefreshTokenRequest;
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +15,6 @@ public interface AuthService {
 
     ResponseEntity<Map<String, Object>> logout(HttpServletRequest request);
 
-    ResponseEntity<String> completeProfile(UserRequestDto userRequest);
 
+    UserInfoResponse refreshToken(RefreshTokenRequest request);
 }

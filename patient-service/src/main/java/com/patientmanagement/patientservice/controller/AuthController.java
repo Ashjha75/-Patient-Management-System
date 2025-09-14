@@ -1,5 +1,6 @@
 package com.patientmanagement.patientservice.controller;
 
+import com.patientmanagement.patientservice.dto.RefreshTokenRequest;
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
 import com.patientmanagement.patientservice.dto.validators.LoginValidationGroup;
@@ -73,18 +74,20 @@ public class AuthController {
     }
 
 
-    @PostMapping("/user-profile")
+    @PostMapping("/refresh")
     @Operation(
-            summary = "User Profile",
-            description = "Update profile of existing user",
+            summary = "Refresh Token",
+            description = "Update access token of existing user",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "User Profile Updated  successfully"),
-                    @ApiResponse(responseCode = "400", description = "Please provide correct details"),
+                    @ApiResponse(responseCode = "200", description = "User token Updated  successfully"),
+                    @ApiResponse(responseCode = "400", description = "Please provide correct accesstoken or refreshtoken"),
                     @ApiResponse(responseCode = "500", description = "Internal Server Error ")
             }
     )
-    public ResponseEntity<String> completeProfile(@Validated(RegistrationValidationGroup.class) @RequestBody UserRequestDto userRequest) {
-        return authService.completeProfile(userRequest);
+
+    public ResponseEntity<UserInfoResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        UserInfoResponse userInfoResponse = authService.refreshToken(request);
+        return ResponseEntity.ok(userInfoResponse);
     }
 
 
