@@ -1,5 +1,6 @@
 package com.patientmanagement.patientservice.controller;
 
+import com.patientmanagement.patientservice.dto.LogoutRequest;
 import com.patientmanagement.patientservice.dto.RefreshTokenRequest;
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
@@ -9,7 +10,6 @@ import com.patientmanagement.patientservice.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -69,8 +68,9 @@ public class AuthController {
                     @ApiResponse(responseCode = "500", description = "Logout failed")
             }
     )
-    public ResponseEntity<Map<String, Object>> logout(HttpServletRequest request) {
-        return authService.logout(request);
+    public ResponseEntity<String> logoutUser(@Valid @RequestBody LogoutRequest request) {
+        authService.logoutUser(request.getToken());
+        return ResponseEntity.ok("Logout successful!");
     }
 
 
