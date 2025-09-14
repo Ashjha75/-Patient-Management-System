@@ -15,6 +15,7 @@ import com.patientmanagement.patientservice.security.TokenBlacklistService;
 import com.patientmanagement.patientservice.service.AuthService;
 import com.patientmanagement.patientservice.service.IRefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -54,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
     private final RoleRepository roleRepository;
 
     @Override
+    @Transactional
     public ResponseEntity<String> registerUser(UserRequestDto userRequestDto) {
         if (userRequestDto.getUsername() == null || userRequestDto.getUsername().isBlank() ||
                 userRequestDto.getPassword() == null || userRequestDto.getPassword().isBlank()) {
@@ -191,6 +193,20 @@ public class AuthServiceImpl implements AuthService {
                     return new UserInfoResponse(newAccessToken, newRefreshToken.getToken(), user.getUsername(), roles);
                 })
                 .orElseThrow(() -> new ResourceNotFound("Refresh token", "token", requestRefreshToken));
+    }
+
+
+    @Override
+    @Transactional
+    public void logoutUser(String refreshToken) {
+        if (!StringUtils.hasText(refreshToken)) {
+            log.warn("Logout attempt with no refresh token provided.");
+            return; // Fail silently, the goal is to be logged out.
+        }
+        // The only action required for a secure logout is to delete the refresh token.
+        // This instantly revokes the user's ability to get a new access token.
+        iRefreshTokenService.deleteByToken(refreshToken);
+        log.info("Successfully logged out user by revoking their refresh token.");
     }
 
 

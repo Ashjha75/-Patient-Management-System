@@ -1,6 +1,10 @@
 package com.patientmanagement.patientservice.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
 
-public record LogoutRequest(@NotBlank String refreshToken) {
+@Getter
+public class LogoutRequest {
+    @NotBlank
+    private String token;
 }
