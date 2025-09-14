@@ -4,14 +4,18 @@ import com.patientmanagement.patientservice.config.AppConstants;
 import com.patientmanagement.patientservice.dto.PatientPageResponseDTO;
 import com.patientmanagement.patientservice.dto.PatientRequestDto;
 import com.patientmanagement.patientservice.dto.PatientResponseDTO;
-import com.patientmanagement.patientservice.dto.validators.CreatePatientValidationGroup;
 import com.patientmanagement.patientservice.service.PatientService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.groups.Default;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
 
 
 @RestController
@@ -46,11 +50,40 @@ public class PatientController {
      * 'PATIENT_MANAGEMENT:CREATE' authority.
      */
     @PreAuthorize("hasAuthority('PATIENT_MANAGEMENT:CREATE')")
-    @PostMapping("/add-patient")
-    public ResponseEntity<PatientResponseDTO> addPatient(@Validated({Default.class, CreatePatientValidationGroup.class}) @RequestBody PatientRequestDto patientRequestDto) {
-        PatientResponseDTO responseDto = patientService.completePatientProfile(patientRequestDto);
+    @PostMapping(value = "/add-patient", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PatientResponseDTO> addPatient(
+            @RequestParam("username") String username,
+            @RequestParam("firstName") String firstName,
+            @RequestParam("lastName") String lastName,
+            @RequestParam("dateOfBirth") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateOfBirth,
+            @RequestParam("gender") String gender,
+            @RequestParam("addressLine1") String addressLine1,
+            @RequestParam(value = "addressLine2", required = false) String addressLine2,
+            @RequestParam("city") String city,
+            @RequestParam("state") String state,
+            @RequestParam("country") String country,
+            @RequestParam("postalCode") String postalCode,
+            @RequestParam(value = "registrationDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate registrationDate,
+            @RequestPart(value = "profilePic", required = false) MultipartFile profilePic
+    ) {
+        PatientRequestDto patientRequestDto = new PatientRequestDto();
+        patientRequestDto.setUsername(username);
+        patientRequestDto.setFirstName(firstName);
+        patientRequestDto.setLastName(lastName);
+        patientRequestDto.setDateOfBirth(dateOfBirth);
+        patientRequestDto.setGender(gender);
+        patientRequestDto.setAddressLine1(addressLine1);
+        patientRequestDto.setAddressLine2(addressLine2);
+        patientRequestDto.setCity(city);
+        patientRequestDto.setState(state);
+        patientRequestDto.setCountry(country);
+        patientRequestDto.setPostalCode(postalCode);
+        patientRequestDto.setRegistrationDate(registrationDate);
+
+        PatientResponseDTO responseDto = patientService.completePatientProfile(patientRequestDto, profilePic);
         return ResponseEntity.status(201).body(responseDto);
     }
+
 
     /**
      * <b>Security Rule:</b> Access is granted if the authenticated user has the

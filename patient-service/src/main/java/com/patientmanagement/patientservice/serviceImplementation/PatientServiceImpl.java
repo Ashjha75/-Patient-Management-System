@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -62,7 +63,7 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     @Transactional
-    public PatientResponseDTO completePatientProfile(PatientRequestDto patientRequestDto) {
+    public PatientResponseDTO completePatientProfile(PatientRequestDto patientRequestDto, MultipartFile profilePic) {
         User user = userRepository.findByUsernameWithAllPermissions(patientRequestDto.getUsername())
                 .orElseThrow(() -> new ResourceNotFound("User", "username", patientRequestDto.getUsername()));
 
@@ -72,7 +73,11 @@ public class PatientServiceImpl implements PatientService {
 
         String patientId = IdGenerator.generatePatientId();
 
-        if (patientRequestDto.getUserImage() == null || patientRequestDto.getUserImage().trim().isEmpty()) {
+        // Handle profile image
+        if (profilePic != null && !profilePic.isEmpty()) {
+            String uploadedUrl = fileStorageService.upload(profilePic, "patients/" + patientId);
+            patientRequestDto.setUserImage(uploadedUrl);
+        } else {
             patientRequestDto.setUserImage("https://dummyimage.com/400x400/cccccc/000000.png&text=Profile");
         }
 
