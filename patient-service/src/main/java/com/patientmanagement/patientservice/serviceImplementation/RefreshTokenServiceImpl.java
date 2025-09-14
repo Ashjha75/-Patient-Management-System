@@ -1,6 +1,5 @@
 package com.patientmanagement.patientservice.serviceImplementation;
 
-import com.patientmanagement.patientservice.exception.ResourceNotFound;
 import com.patientmanagement.patientservice.exception.TokenRefreshException;
 import com.patientmanagement.patientservice.model.RefreshToken;
 import com.patientmanagement.patientservice.repository.RefreshTokenRepository;
@@ -36,11 +35,11 @@ public class RefreshTokenServiceImpl implements IRefreshTokenService {
     @Transactional
     public RefreshToken createRefreshToken(String username) {
         var user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFound("User", "username", username));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        refreshTokenRepository.deleteByUser(user);
+        RefreshToken refreshToken = refreshTokenRepository.findByUser(user)
+                .orElse(new RefreshToken());
 
-        RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(user);
         refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
         refreshToken.setToken(UUID.randomUUID().toString());

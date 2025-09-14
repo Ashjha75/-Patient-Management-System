@@ -16,4 +16,6 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     // Use this to delete the token when a user logs out or is disabled
     @Modifying
     int deleteByUser(User user);
+
+    Optional<RefreshToken> findByUser(User user);
 }

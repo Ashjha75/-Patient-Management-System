@@ -4,7 +4,7 @@ import com.patientmanagement.patientservice.dto.RefreshTokenRequest;
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
 import com.patientmanagement.patientservice.exception.ApiException;
-import com.patientmanagement.patientservice.exception.TokenRefreshException;
+import com.patientmanagement.patientservice.exception.ResourceNotFound;
 import com.patientmanagement.patientservice.model.RefreshToken;
 import com.patientmanagement.patientservice.model.Role;
 import com.patientmanagement.patientservice.model.User;
@@ -190,7 +190,7 @@ public class AuthServiceImpl implements AuthService {
 
                     return new UserInfoResponse(newAccessToken, newRefreshToken.getToken(), user.getUsername(), roles);
                 })
-                .orElseThrow(() -> new TokenRefreshException(requestRefreshToken, "Refresh token not found in database!"));
+                .orElseThrow(() -> new ResourceNotFound("Refresh token", "token", requestRefreshToken));
     }
 
 
