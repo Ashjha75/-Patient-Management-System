@@ -36,3 +36,4 @@ build/
 application.properties
 application-dev.properties
 application-prod.properties
+springboot_project_dump.txt
