@@ -2,6 +2,7 @@ package com.patientmanagement.patientservice.serviceImplementation;
 
 import com.patientmanagement.patientservice.exception.ApiException;
 import com.patientmanagement.patientservice.service.FileStorageService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -13,8 +14,9 @@ import java.util.UUID;
 
 @Service
 public class FileStorageServiceImpl implements FileStorageService {
-
     private final S3Client s3Client;
+    @Value("${AWS_S3_BUCKET}")
+    private String AWS_S3_BUCKET;
 
     public FileStorageServiceImpl(S3Client s3Client) {
         this.s3Client = s3Client;
@@ -25,7 +27,8 @@ public class FileStorageServiceImpl implements FileStorageService {
 
         try {
             // configure in application.yml if you want
-            String bucketName = "your-bucket-name";
+            String bucketName =
+                    AWS_S3_BUCKET;
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName)
                     .key(key)
