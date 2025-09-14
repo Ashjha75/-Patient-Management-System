@@ -3,6 +3,7 @@ package com.patientmanagement.patientservice.serviceImplementation;
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
 import com.patientmanagement.patientservice.exception.ApiException;
+import com.patientmanagement.patientservice.model.RefreshToken;
 import com.patientmanagement.patientservice.model.Role;
 import com.patientmanagement.patientservice.model.User;
 import com.patientmanagement.patientservice.repository.RoleRepository;
@@ -10,6 +11,7 @@ import com.patientmanagement.patientservice.repository.UserRepository;
 import com.patientmanagement.patientservice.security.JwtUtils;
 import com.patientmanagement.patientservice.security.TokenBlacklistService;
 import com.patientmanagement.patientservice.service.AuthService;
+import com.patientmanagement.patientservice.service.IRefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +46,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final TokenBlacklistService tokenBlacklistService;
-    private final Refr tokenBlacklistService;
+    private final IRefreshTokenService iRefreshTokenService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
@@ -80,7 +82,7 @@ public class AuthServiceImpl implements AuthService {
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully.");
     }
 
-    Override
+    @Override
     public ResponseEntity<UserInfoResponse> authenticateUser(UserRequestDto userRequest) {
         String loginInput = userRequest.getUsername(); // Can be username or email
         if (!StringUtils.hasText(loginInput)) {
@@ -118,7 +120,7 @@ public class AuthServiceImpl implements AuthService {
         String jwtToken = jwtUtils.generateTokenFromUsername(userDetails.getUsername());
 
         // 2. ✅ Create and persist the long-lived Refresh Token
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUsername());
+        RefreshToken refreshToken = iRefreshTokenService.createRefreshToken(userDetails.getUsername());
 
         // 3. Get the user's roles for the response
         List<String> roles = userDetails.getAuthorities().stream()
@@ -135,6 +137,7 @@ public class AuthServiceImpl implements AuthService {
 
         return ResponseEntity.ok(response);
     }
+
     @Override
     public ResponseEntity<Map<String, Object>> logout(HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
