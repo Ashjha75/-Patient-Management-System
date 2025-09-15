@@ -51,9 +51,12 @@ public class User implements UserDetails {
     @Size(max = 100)
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
+    private boolean emailVerified = false;
+
     @Column(nullable = false)
     private boolean enabled = true;
-    // Roles (ADMIN, SUBADMIN, DOCTOR, PATIENT, etc.)
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_roles",
