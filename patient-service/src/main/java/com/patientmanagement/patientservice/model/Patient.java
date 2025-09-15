@@ -29,7 +29,7 @@ public class Patient implements Serializable {
     @Column(name = "user_id")
     private Long id;
 
-    @Column(name = "user_image")
+    @Column(name = "user_image", length = 1000)
     private String userImage;
 
     @NotNull

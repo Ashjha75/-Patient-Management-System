@@ -32,6 +32,7 @@ public class PatientMapper {
         dto.setCountry(patient.getCountry());
         dto.setPostalCode(patient.getPostalCode());
         dto.setRegistrationDate(patient.getRegistrationDate());
+        dto.setUserImage(patient.getUserImage());
         return dto;
     }
 
@@ -58,6 +59,7 @@ public class PatientMapper {
         patient.setCountry(dto.getCountry());
         patient.setPostalCode(dto.getPostalCode());
         patient.setRegistrationDate(dto.getRegistrationDate());
+        patient.setUserImage(dto.getUserImage());
         return patient;
     }
 }

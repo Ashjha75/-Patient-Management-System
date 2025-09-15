@@ -19,6 +19,7 @@ public class PatientResponseDTO {
     private String country;
     private String postalCode;
     private LocalDate registrationDate;
+    private String userImage;
 
     // Getters and setters
     // (Generate with your IDE or Lombok if preferred)
