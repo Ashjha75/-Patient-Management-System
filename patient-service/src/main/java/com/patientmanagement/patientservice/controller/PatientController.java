@@ -55,7 +55,7 @@ public class PatientController {
             @RequestParam("username") String username,
             @RequestParam("firstName") String firstName,
             @RequestParam("lastName") String lastName,
-            @RequestParam("dateOfBirth") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateOfBirth,
+            @RequestParam("dateOfBirth") @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate dateOfBirth,
             @RequestParam("gender") String gender,
             @RequestParam("addressLine1") String addressLine1,
             @RequestParam(value = "addressLine2", required = false) String addressLine2,
@@ -63,7 +63,7 @@ public class PatientController {
             @RequestParam("state") String state,
             @RequestParam("country") String country,
             @RequestParam("postalCode") String postalCode,
-            @RequestParam(value = "registrationDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate registrationDate,
+            @RequestParam(value = "registrationDate", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate registrationDate,
             @RequestPart(value = "profilePic", required = false) MultipartFile profilePic
     ) {
         PatientRequestDto patientRequestDto = new PatientRequestDto();
