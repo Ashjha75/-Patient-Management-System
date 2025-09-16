@@ -51,4 +51,50 @@ public class OtpEmailUtils {
                 </html>
                 """.formatted(otp);
     }
+
+
+    public static String buildVerificationEmailHtml(String verificationLink) {
+        return """
+                <html>
+                <head>
+                    <style>
+                        .container {
+                            max-width: 400px;
+                            margin: auto;
+                            padding: 24px;
+                            background: #f9f9f9;
+                            border-radius: 8px;
+                            font-family: Arial, sans-serif;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                        }
+                        .button {
+                            display: inline-block;
+                            padding: 12px 24px;
+                            background: #007bff;
+                            color: #fff;
+                            border-radius: 4px;
+                            text-decoration: none;
+                            font-weight: bold;
+                            margin: 16px 0;
+                        }
+                        .footer {
+                            font-size: 0.9em;
+                            color: #888;
+                            margin-top: 24px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h2>Verify Your Email</h2>
+                        <p>Click the button below to verify your account:</p>
+                        <a href="%s" class="button">Verify Now</a>
+                        <div class="footer">
+                            If you did not request this, please ignore this email.
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """.formatted(verificationLink);
+    }
 }

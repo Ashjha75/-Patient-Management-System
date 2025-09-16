@@ -86,8 +86,7 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
 
         // Generate OTP and send email
-        String otp = OtpEmailUtils.generateOtp();
-        String htmlBody = OtpEmailUtils.buildOtpEmailHtml(otp);
+        String htmlBody = OtpEmailUtils.buildVerificationEmailHtml(otp);
         emailService.sendEmail(user.getEmail(), "Your Registration OTP", htmlBody);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully. OTP sent to email.");
