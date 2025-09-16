@@ -1,5 +1,6 @@
 package com.patientmanagement.patientservice.serviceImplementation;
 
+import com.patientmanagement.patientservice.awsService.EmailService;
 import com.patientmanagement.patientservice.dto.RefreshTokenRequest;
 import com.patientmanagement.patientservice.dto.UserInfoResponse;
 import com.patientmanagement.patientservice.dto.UserRequestDto;
@@ -14,6 +15,7 @@ import com.patientmanagement.patientservice.security.JwtUtils;
 import com.patientmanagement.patientservice.security.TokenBlacklistService;
 import com.patientmanagement.patientservice.service.AuthService;
 import com.patientmanagement.patientservice.service.IRefreshTokenService;
+import com.patientmanagement.patientservice.util.OtpEmailUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -54,6 +56,8 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
 
+    private final EmailService emailService;
+
     @Override
     @Transactional
     public ResponseEntity<String> registerUser(UserRequestDto userRequestDto) {
@@ -75,14 +79,18 @@ public class AuthServiceImpl implements AuthService {
                 userRequestDto.getEmail()
         );
 
-        // Assign default role
         Role defaultRole = roleRepository.findByRoleName("ROLE_USER")
                 .orElseThrow(() -> new ApiException("Default role not found"));
         user.getRoles().add(defaultRole);
 
         userRepository.save(user);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully.");
+        // Generate OTP and send email
+        String otp = OtpEmailUtils.generateOtp();
+        String htmlBody = OtpEmailUtils.buildOtpEmailHtml(otp);
+        emailService.sendEmail(user.getEmail(), "Your Registration OTP", htmlBody);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully. OTP sent to email.");
     }
 
     @Override
