@@ -90,5 +90,15 @@ public class AuthController {
         return ResponseEntity.ok(userInfoResponse);
     }
 
+    @GetMapping("/verify")
+    public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
+        boolean verified = authService.verifyEmail(token);
+        if (verified) {
+            return ResponseEntity.ok("Email verified successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Invalid or expired verification link.");
+        }
+    }
+
 
 }

@@ -19,4 +19,8 @@ public interface AuthService {
     UserInfoResponse refreshToken(RefreshTokenRequest request);
 
     void logoutUser(String refreshToken);
+
+    String generateVerificationToken(String email);
+
+    boolean verifyEmail(String token);
 }
