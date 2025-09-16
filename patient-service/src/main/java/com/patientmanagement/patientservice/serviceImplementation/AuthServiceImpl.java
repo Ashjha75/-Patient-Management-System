@@ -16,6 +16,8 @@ import com.patientmanagement.patientservice.security.TokenBlacklistService;
 import com.patientmanagement.patientservice.service.AuthService;
 import com.patientmanagement.patientservice.service.IRefreshTokenService;
 import com.patientmanagement.patientservice.util.OtpEmailUtils;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -33,11 +35,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.crypto.SecretKey;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -216,5 +216,48 @@ public class AuthServiceImpl implements AuthService {
         log.info("Successfully logged out user by revoking their refresh token.");
     }
 
+    // Generate JWT token for email verification (10 min expiry)
+    @Override
+    public String generateVerificationToken(String email) {
+        long tenMinutesMs = 10 * 60 * 1000;
+        Date issuedDate = new Date();
+        Date expiryDate = new Date(issuedDate.getTime() + tenMinutesMs);
 
+        String token = Jwts.builder()
+                .subject(email)
+                .issuedAt(issuedDate)
+                .expiration(expiryDate)
+                .signWith(jwtUtils.getSecretKey())
+                .compact();
+
+        return token;
+    }
+
+    // Verify email using JWT token
+    @Override
+    public boolean verifyEmail(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith((SecretKey) jwtUtils.getSecretKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            String email = claims.getSubject();
+            Date expiration = claims.getExpiration();
+            if (expiration.before(new Date())) {
+                return false; // Token expired
+            }
+
+            User user = userRepository.findByEmail(email).orElse(null);
+            if (user != null && !user.isEmailVerified()) {
+                user.setEmailVerified(true);
+                userRepository.save(user);
+                return true;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return false;
+    }
 }

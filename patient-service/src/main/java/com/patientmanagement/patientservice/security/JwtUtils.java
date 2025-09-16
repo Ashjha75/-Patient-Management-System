@@ -163,4 +163,8 @@ public class JwtUtils {
     private Key secureKey() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
+
+    public Key getSecretKey() {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+    }
 }
