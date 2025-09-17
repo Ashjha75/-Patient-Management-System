@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,11 +44,9 @@ import java.util.*;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthServiceImpl implements AuthService {
-
     private static final String MESSAGE_KEY = "message";
     private static final String STATUS_KEY = "status";
     private static final String TIMESTAMP_KEY = "timestamp";
-
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final TokenBlacklistService tokenBlacklistService;
@@ -55,8 +54,10 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
-
     private final EmailService emailService;
+
+    @Value("${app.domain}")
+    private String appDomain;
 
     @Override
     @Transactional
@@ -84,10 +85,12 @@ public class AuthServiceImpl implements AuthService {
         user.getRoles().add(defaultRole);
 
         userRepository.save(user);
+        String token = generateVerificationToken(user.getEmail());
 
+        String verificationLink = appDomain + "/verify-email?token=" + token;
         // Generate OTP and send email
-        String htmlBody = OtpEmailUtils.buildVerificationEmailHtml(otp);
-        emailService.sendEmail(user.getEmail(), "Your Registration OTP", htmlBody);
+        String htmlBody = OtpEmailUtils.buildVerificationEmailHtml(verificationLink);
+        emailService.sendEmail(user.getEmail(), "Your Registration Verification", htmlBody);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully. OTP sent to email.");
     }

@@ -90,7 +90,7 @@ public class AuthController {
         return ResponseEntity.ok(userInfoResponse);
     }
 
-    @GetMapping("/verify")
+    @GetMapping("/verify-email")
     public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
         boolean verified = authService.verifyEmail(token);
         if (verified) {
