@@ -53,7 +53,8 @@ public class SecurityConfig {
                                 "/api/v1/login/github",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
-                                "/api/v1/login/oauth2/**"
+                                "/api/v1/login/oauth2/**",
+                                "/verify-email"
                         ).permitAll()
                         .anyRequest().authenticated()
         ).headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
