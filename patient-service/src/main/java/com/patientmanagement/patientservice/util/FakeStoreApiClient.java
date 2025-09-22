@@ -22,7 +22,7 @@ public class FakeStoreApiClient {
      */
     public FakeStoreApiClient(WebClient.Builder builder) {
         this.webClient = builder
-                .baseUrl("https://fakestoreapi.com")
+                .baseUrl("https://fakestoreapi.com/")
                 .build();
     }
 
