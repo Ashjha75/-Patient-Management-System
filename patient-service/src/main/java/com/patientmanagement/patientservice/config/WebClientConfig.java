@@ -1,5 +1,6 @@
 package com.patientmanagement.patientservice.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -13,10 +14,13 @@ import java.time.Duration;
 @Configuration
 public class WebClientConfig {
 
+    @Value("${EXTERNAL_API_URL"})
+    private String EXTERNAL_API_URL;
+
     @Bean
     public WebClient.Builder webClientBuilder() {
         return WebClient.builder()
-                // .baseUrl("https://api.default.com")
+                 .baseUrl("https://api.default.com")
                 .defaultHeader(HttpHeaders.USER_AGENT, "MySpringApp/1.0")
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .clientConnector(new ReactorClientHttpConnector(
