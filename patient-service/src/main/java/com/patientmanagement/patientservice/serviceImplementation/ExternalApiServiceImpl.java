@@ -3,6 +3,7 @@ package com.patientmanagement.patientservice.serviceImplementation;
 import com.patientmanagement.patientservice.dto.ExternalProductDTO;
 import com.patientmanagement.patientservice.service.ExternalApiService;
 import com.patientmanagement.patientservice.util.FakeStoreApiClient;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -24,6 +25,7 @@ public class ExternalApiServiceImpl implements ExternalApiService {
     }
 
     @Override
+    @Cacheable(value = "products", key = "#id")
     public Mono<ExternalProductDTO> getProductById(Long id) {
         return fakeStoreApiClient.getProductById(id);
     }
