@@ -15,7 +15,7 @@ public class HealthCheckController {
     public String healthCheck() {
         return "Health Is ok👌";
     }
-    
+
     @GetMapping("/api/v1/login/google")
     public void googleLogin(HttpServletResponse response) throws IOException {
         response.sendRedirect("/oauth2/authorization/google"); // or your provider

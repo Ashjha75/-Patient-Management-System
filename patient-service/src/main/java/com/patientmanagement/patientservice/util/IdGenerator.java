@@ -25,6 +25,10 @@ public class IdGenerator {
     // Secure random number generator for strong randomness
     private static final SecureRandom RANDOM = new SecureRandom();
 
+    // Prevent instantiation
+    private IdGenerator() {
+    }
+
     /**
      * Generates a new unique patient ID.
      *
@@ -37,9 +41,6 @@ public class IdGenerator {
         }
         return sb.toString();
     }
-
-    // Prevent instantiation
-    private IdGenerator() {}
 }
 
 //Patient patient = new Patient();
