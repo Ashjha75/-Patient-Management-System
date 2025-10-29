@@ -1,4 +1,3 @@
-
 ---
 
 # 📚 Detailed Syllabus for Spring Boot CRUD Project

@@ -15,7 +15,10 @@ import java.lang.annotation.Target;
 public @interface ValidAge {
 
     String message() default "Patient must be at least 18 years old";
+
     int min() default 18;
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

@@ -32,7 +32,7 @@ public class TokenBlacklistService {
     /**
      * Adds a token to the blacklist with its expiration time.
      *
-     * @param token The JWT token to blacklist
+     * @param token          The JWT token to blacklist
      * @param expirationTime The time when the token expires
      */
     public void blacklistToken(String token, LocalDateTime expirationTime) {
@@ -46,7 +46,7 @@ public class TokenBlacklistService {
         // Log for security monitoring (avoid logging sensitive data)
         String tokenPrefix = token.length() > 20 ? token.substring(0, 20) + "..." : token + "...";
         logger.info("Token blacklisted successfully. Token prefix: {}, Expiration: {}",
-                   tokenPrefix, expirationTime);
+                tokenPrefix, expirationTime);
     }
 
     /**
@@ -58,7 +58,7 @@ public class TokenBlacklistService {
         LocalDateTime expirationTime = LocalDateTime.now().plusHours(tokenExpirationHours);
         blacklistToken(token, expirationTime);
     }
-    
+
     /**
      * Checks if a token is blacklisted.
      *
@@ -79,7 +79,7 @@ public class TokenBlacklistService {
 
         return isBlacklisted;
     }
-    
+
     /**
      * Removes expired tokens from the blacklist to prevent memory leaks.
      * This method is scheduled to run every hour.
@@ -100,13 +100,13 @@ public class TokenBlacklistService {
 
         if (removedCount.get() > 0) {
             logger.info("Cleaned up {} expired tokens from blacklist. Current blacklist size: {}",
-                       removedCount.get(), blacklistedTokens.size());
+                    removedCount.get(), blacklistedTokens.size());
         }
 
         // Log warning if blacklist is getting too large
         if (blacklistedTokens.size() > 10000) {
             logger.warn("Token blacklist is large ({}). Consider reviewing token expiration strategy.",
-                       blacklistedTokens.size());
+                    blacklistedTokens.size());
         }
     }
 
