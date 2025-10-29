@@ -10,6 +10,7 @@ import java.time.Period;
 @Slf4j
 public class AgeValidator implements ConstraintValidator<ValidAge, LocalDate> {
     int minAge;
+
     @Override
     public boolean isValid(LocalDate dateOfBirth, ConstraintValidatorContext constraintValidatorContext) {
         if (dateOfBirth == null) {

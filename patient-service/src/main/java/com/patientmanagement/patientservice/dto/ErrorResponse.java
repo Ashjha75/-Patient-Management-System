@@ -6,9 +6,8 @@ import java.util.Map;
 public record ErrorResponse(int statusCode,
                             LocalDateTime timestamp,
                             String message,
-                            Map<String,String> details)
-{
+                            Map<String, String> details) {
     public ErrorResponse(int statusCode, LocalDateTime timestamp, String message) {
-        this(statusCode, timestamp, message,  null);
+        this(statusCode, timestamp, message, null);
     }
 }
