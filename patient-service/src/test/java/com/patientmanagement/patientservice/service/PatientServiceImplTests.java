@@ -83,7 +83,7 @@
 //    }
 //
 //    // --- Test for getAllPatients ---
-////    @Test
+/// /    @Test
 //    @DisplayName("Should Return Paginated List Of Patients")
 //    void getAllPatients_shouldReturnPatientPageResponseDTO() {
 //        log.info("Testing getAllPatients...");
@@ -103,7 +103,7 @@
 //    }
 //
 //    // --- Tests for addPatient ---
-////    @Test
+/// /    @Test
 //    @DisplayName("Should Add Patient Successfully When Data Is Valid")
 //    void addPatient_whenDataIsValid_shouldSaveAndReturnPatient() {
 //        log.info("Testing addPatient success case...");
